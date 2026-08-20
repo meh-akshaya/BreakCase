@@ -1,0 +1,21 @@
+{
+  "name": "breakcase-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "dev": "npm run dev:server",
+    "db:push": "npx prisma db push --schema=./prisma/schema.prisma",
+    "db:seed": "npx ts-node ./prisma/seed.ts",
+    "db:generate": "npx prisma generate --schema=./prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.4.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}

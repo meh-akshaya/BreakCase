@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String       @id @default(cuid())
+  username     String       @unique
+  email        String       @unique
+  passwordHash String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  submissions  Submission[]
+  progress     Progress[]
+
+  @@map("users")
+}
+
+model Problem {
+  id                String       @id @default(cuid())
+  problemNumber     Int          @unique
+  title             String
+  slug              String       @unique
+  difficulty        String       // "Easy", "Easy/Medium", "Medium", "Medium/Hard"
+  tags              String       // Comma-separated or JSON array string e.g. "Arrays, Implementation"
+  shortDescription  String
+  statement         String
+  inputFormat       String
+  outputFormat      String
+  constraints       String
+  sampleInput       String
+  sampleOutput      String
+  sampleExplanation String
+  buggySolution     String       // Suspicious C++ code shown to user
+  referenceSolution String       // Secret trusted C++ reference code
+  language          String       @default("cpp")
+  createdAt         DateTime     @default(now())
+
+  submissions       Submission[]
+  progress          Progress[]
+
+  @@map("problems")
+}
+
+model Submission {
+  id                    String   @id @default(cuid())
+  userId                String
+  problemId             String
+  input                 String
+  buggyOutput           String?
+  expectedOutput        String?
+  isValidInput          Boolean  @default(true)
+  isCounterexample      Boolean  @default(false)
+  statusMessage         String?
+  createdAt             DateTime @default(now())
+
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem               Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([problemId])
+  @@map("submissions")
+}
+
+model Progress {
+  id        String    @id @default(cuid())
+  userId    String
+  problemId String
+  solved    Boolean   @default(false)
+  solvedAt  DateTime?
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem   Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, problemId])
+  @@map("progress")
+}
