@@ -9,6 +9,8 @@ import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProblemPage } from './pages/ProblemPage';
 import { ProgressPage } from './pages/ProgressPage';
+import { AboutPage } from './pages/AboutPage';
+import { ContributePage } from './pages/ContributePage';
 import { RefreshCw } from 'lucide-react';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -72,6 +74,8 @@ const AppContent: React.FC = () => {
           />
           <Route path="/problems" element={<DashboardPage />} />
           <Route path="/problems/:slug" element={<ProblemPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contribute" element={<ContributePage />} />
           <Route
             path="/progress"
             element={
