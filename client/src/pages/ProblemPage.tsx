@@ -3,25 +3,24 @@ import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import type { Problem, TestResult } from '../types';
 import Editor from '@monaco-editor/react';
+import { getDifficultyRating } from '../utils/codeforces';
 import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
   ArrowLeft,
   RefreshCw,
-  Zap,
   Copy,
   Check,
   Bookmark,
-  MessageSquare,
   FileText,
   Clock,
   Play,
   RotateCcw,
   Maximize2,
-  Lightbulb,
   ChevronDown,
   Code2,
+  Terminal,
 } from 'lucide-react';
 
 export const ProblemPage: React.FC = () => {
@@ -39,8 +38,7 @@ export const ProblemPage: React.FC = () => {
   const [seconds, setSeconds] = useState(0);
 
   // Code editor & test state
-  const [language, setLanguage] = useState('C++ (17)');
-  const [showCustomInput, setShowCustomInput] = useState(true);
+  const [language, setLanguage] = useState('GNU G++17 7.3.0');
   const [inputVal, setInputVal] = useState('');
   const [evaluating, setEvaluating] = useState(false);
   const [result, setResult] = useState<TestResult | null>(null);
@@ -118,26 +116,26 @@ export const ProblemPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center space-y-3 bg-white dark:bg-black text-slate-800 dark:text-yellow-400">
-        <RefreshCw className="w-8 h-8 text-sky-600 dark:text-yellow-400 animate-spin" />
-        <p className="text-xs font-mono text-slate-500 dark:text-yellow-400/80">Loading Problem IDE...</p>
+      <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center space-y-3 bg-[#F8FAFC] dark:bg-[#141519] text-[#1F2937] dark:text-[#F1F3F5]">
+        <RefreshCw className="w-8 h-8 text-[#3B5998] dark:text-[#4F7CFF] animate-spin" />
+        <p className="text-xs font-mono text-[#717171] dark:text-[#858A99]">Loading Codeforces Problem Environment...</p>
       </div>
     );
   }
 
   if (error || !problem) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center p-4 bg-white dark:bg-black text-slate-800 dark:text-yellow-400">
-        <div className="p-6 max-w-md w-full rounded-xl bg-sky-50 dark:bg-zinc-900 border border-sky-200 dark:border-yellow-500/30 text-center space-y-4 shadow-sm">
-          <AlertTriangle className="w-10 h-10 text-amber-500 dark:text-yellow-400 mx-auto" />
-          <h2 className="text-lg font-bold text-sky-900 dark:text-yellow-400">Problem Not Found</h2>
-          <p className="text-xs text-slate-600 dark:text-zinc-400">{error || 'The requested problem could not be located.'}</p>
+      <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center p-4 bg-[#F8FAFC] dark:bg-[#141519] text-[#1F2937] dark:text-[#F1F3F5]">
+        <div className="p-6 max-w-md w-full rounded cf-roundbox text-center space-y-4 shadow-sm bg-white dark:bg-[#1E1F26]">
+          <AlertTriangle className="w-10 h-10 text-[#C09853] dark:text-[#D99A2B] mx-auto" />
+          <h2 className="text-lg font-bold text-[#3B5998] dark:text-[#4F7CFF]">Problem Not Found</h2>
+          <p className="text-xs text-[#717171] dark:text-[#858A99]">{error || 'The requested problem could not be located.'}</p>
           <Link
             to="/problems"
-            className="inline-flex items-center space-x-2 px-4 py-2 rounded bg-sky-600 dark:bg-yellow-400 text-white dark:text-zinc-950 font-bold text-xs hover:bg-sky-500 dark:hover:bg-yellow-300 transition-colors"
+            className="inline-flex items-center space-x-2 px-4 py-1.5 rounded bg-[#3B5998] dark:bg-[#4F7CFF] text-white font-bold text-xs hover:bg-[#2E4577] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to Problemset</span>
+            <span>Back to Problemset Catalog</span>
           </Link>
         </div>
       </div>
@@ -145,80 +143,69 @@ export const ProblemPage: React.FC = () => {
   }
 
   const formattedId = String(problem.problemNumber).padStart(2, '0');
+  const diffInfo = getDifficultyRating(problem.difficulty);
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] bg-white dark:bg-black text-black dark:text-zinc-200 flex flex-col overflow-hidden font-sans">
+    <div className="h-[calc(100vh-6rem)] bg-white dark:bg-[#141519] text-[#1F2937] dark:text-[#F1F3F5] flex flex-col overflow-hidden font-sans">
       
-      {/* Sub-Header Navigation Bar */}
-      <div className="bg-[#e8f4fc] dark:bg-zinc-950 border-b border-gray-300 dark:border-yellow-500/30 px-4 py-1.5 flex items-center justify-between text-xs shrink-0">
+      {/* Sub-Header Navigation & Control Bar */}
+      <div className="bg-[#E1E1E1] dark:bg-[#202129] border-b border-[#B9B9B9] dark:border-[#393443] px-4 py-1.5 flex items-center justify-between text-xs shrink-0">
         
         {/* Navigation Tabs (Problem, Editorial, Submissions, Comments) */}
         <div className="flex items-center space-x-1">
           <Link
             to="/problems"
-            className="p-1 rounded text-black hover:bg-sky-100 dark:text-yellow-400 dark:hover:bg-zinc-900 transition-colors mr-1"
-            title="Back to problems"
+            className="p-1 rounded text-[#1F2937] hover:bg-[#CCCCCC] dark:text-[#F1F3F5] dark:hover:bg-[#292535] transition-colors mr-1"
+            title="Back to problemset"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
 
           <button
             onClick={() => setActiveTab('problem')}
-            className={`px-3 py-1 rounded font-bold transition-colors flex items-center space-x-1.5 ${
+            className={`px-3 py-1 rounded font-bold transition-all flex items-center space-x-1.5 ${
               activeTab === 'problem'
-                ? 'bg-[#1a5ab8] text-white dark:bg-yellow-400/20 dark:text-yellow-400 border-b-2 border-blue-900 dark:border-yellow-400'
-                : 'text-black hover:bg-sky-100 dark:text-yellow-400/80 dark:hover:bg-zinc-900'
+                ? 'bg-[#3B5998] dark:bg-[#4F7CFF] text-white shadow-2xs'
+                : 'text-[#1F2937] dark:text-[#B7BBC7] hover:bg-white dark:hover:bg-[#292535]'
             }`}
           >
             <Code2 className="w-3.5 h-3.5" />
-            <span>Problem</span>
+            <span>Problem Statement</span>
           </button>
 
           <button
             onClick={() => setActiveTab('editorial')}
-            className={`px-3 py-1 rounded font-bold transition-colors flex items-center space-x-1.5 ${
+            className={`px-3 py-1 rounded font-bold transition-all flex items-center space-x-1.5 ${
               activeTab === 'editorial'
-                ? 'bg-[#1a5ab8] text-white dark:bg-yellow-400/20 dark:text-yellow-400 border-b-2 border-blue-900 dark:border-yellow-400'
-                : 'text-black hover:bg-sky-100 dark:text-yellow-400/80 dark:hover:bg-zinc-900'
+                ? 'bg-[#3B5998] dark:bg-[#4F7CFF] text-white shadow-2xs'
+                : 'text-[#1F2937] dark:text-[#B7BBC7] hover:bg-white dark:hover:bg-[#292535]'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>Editorial</span>
+            <span>Tutorial & Hints</span>
           </button>
 
           <button
             onClick={() => setActiveTab('submissions')}
-            className={`px-3 py-1 rounded font-bold transition-colors flex items-center space-x-1.5 ${
+            className={`px-3 py-1 rounded font-bold transition-all flex items-center space-x-1.5 ${
               activeTab === 'submissions'
-                ? 'bg-[#1a5ab8] text-white dark:bg-yellow-400/20 dark:text-yellow-400 border-b-2 border-blue-900 dark:border-yellow-400'
-                : 'text-black hover:bg-sky-100 dark:text-yellow-400/80 dark:hover:bg-zinc-900'
+                ? 'bg-[#3B5998] dark:bg-[#4F7CFF] text-white shadow-2xs'
+                : 'text-[#1F2937] dark:text-[#B7BBC7] hover:bg-white dark:hover:bg-[#292535]'
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Submissions</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('comments')}
-            className={`px-3 py-1 rounded font-bold transition-colors flex items-center space-x-1.5 ${
-              activeTab === 'comments'
-                ? 'bg-[#1a5ab8] text-white dark:bg-yellow-400/20 dark:text-yellow-400 border-b-2 border-blue-900 dark:border-yellow-400'
-                : 'text-black hover:bg-sky-100 dark:text-yellow-400/80 dark:hover:bg-zinc-900'
-            }`}
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-            <span>Comments</span>
+            <span>My Submissions</span>
           </button>
         </div>
 
         {/* Right Header Controls */}
-        <div className="flex items-center space-x-3 text-black dark:text-yellow-400">
+        <div className="flex items-center space-x-3 text-[#1F2937] dark:text-[#F1F3F5]">
           <button
             onClick={() => setBookmarked(!bookmarked)}
-            className={`p-1 rounded hover:bg-sky-100 dark:hover:bg-zinc-900 transition-colors ${
-              bookmarked ? 'text-amber-500 dark:text-yellow-400' : 'text-gray-400 dark:text-zinc-500'
+            className={`p-1 rounded hover:bg-[#CCCCCC] dark:hover:bg-[#292535] transition-colors ${
+              bookmarked ? 'text-[#FF8C00]' : 'text-[#717171] dark:text-[#858A99]'
             }`}
-            title="Bookmark problem"
+            title="Star problem"
           >
             <Bookmark className="w-4 h-4 fill-current" />
           </button>
@@ -230,7 +217,7 @@ export const ProblemPage: React.FC = () => {
                 document.exitFullscreen();
               }
             }}
-            className="p-1 rounded hover:bg-sky-100 dark:hover:bg-zinc-900 transition-colors text-black dark:text-yellow-400"
+            className="p-1 rounded hover:bg-[#CCCCCC] dark:hover:bg-[#292535] transition-colors text-[#1F2937] dark:text-[#F1F3F5]"
             title="Toggle Fullscreen"
           >
             <Maximize2 className="w-4 h-4" />
@@ -239,163 +226,162 @@ export const ProblemPage: React.FC = () => {
       </div>
 
       {/* Main Split Workspace */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-300 dark:divide-yellow-500/30 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-[#B9B9B9] dark:divide-[#393443] overflow-hidden">
         
-        {/* LEFT PANE: PROBLEM STATEMENT */}
-        <div className="p-5 lg:p-6 overflow-y-auto space-y-5 bg-white dark:bg-black text-black dark:text-zinc-200">
+        {/* LEFT PANE: CODEFORCES PROBLEM STATEMENT */}
+        <div className="p-6 overflow-y-auto space-y-5 bg-white dark:bg-[#1E1F26] text-[#1F2937] dark:text-[#F1F3F5] problem-statement">
           
-          {/* Header & Badges */}
-          <div className="space-y-3">
-            <div className="flex items-start justify-between gap-3">
-              <h1 className="text-xl font-extrabold text-black dark:text-yellow-400 tracking-tight leading-snug font-serif">
-                {formattedId}. {problem.title}
-              </h1>
-              <button
-                onClick={() => setBookmarked(!bookmarked)}
-                className={`p-1 rounded ${bookmarked ? 'text-amber-500 dark:text-yellow-400' : 'text-gray-400 dark:text-zinc-600'}`}
-              >
-                <Bookmark className="w-5 h-5 fill-current" />
-              </button>
+          {/* Centered Codeforces Header & Limits */}
+          <div className="header space-y-2">
+            <div className="title text-[#3B5998] dark:text-[#4F7CFF]">
+              {formattedId}. {problem.title}
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs font-sans text-black dark:text-zinc-400 border-b border-gray-200 dark:border-yellow-500/20 pb-3">
+            <div className="text-center text-xs space-y-0.5 text-[#454545] dark:text-[#B7BBC7]">
               <div>
-                Difficulty: <strong className="text-[#1a5ab8] dark:text-yellow-400">{problem.difficulty}</strong>
+                <span className="property-title">time limit per test: </span>
+                <span className="font-semibold">2.0 seconds</span>
               </div>
               <div>
-                Accuracy: <strong className="text-[#1a5ab8] dark:text-yellow-400">49.82%</strong>
+                <span className="property-title">memory limit per test: </span>
+                <span className="font-semibold">256 megabytes</span>
               </div>
               <div>
-                Submissions: <strong className="text-[#1a5ab8] dark:text-yellow-400">11K+</strong>
+                <span className="property-title">input: </span>
+                <span className="font-semibold">standard input</span>
               </div>
               <div>
-                Points: <strong className="text-[#1a5ab8] dark:text-yellow-400">4</strong>
+                <span className="property-title">output: </span>
+                <span className="font-semibold">standard output</span>
+              </div>
+              <div className="pt-1">
+                <span className="property-title">rating: </span>
+                <span className="font-bold font-mono px-1.5 py-0.2 rounded border border-current" style={{ color: diffInfo.color }}>
+                  *{diffInfo.rating} ({problem.difficulty})
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Statement */}
+          {/* Statement Content */}
           {activeTab === 'problem' && (
-            <div className="space-y-5 text-xs text-black dark:text-zinc-300 leading-relaxed font-normal">
+            <div className="space-y-4 text-xs text-[#1F2937] dark:text-[#B7BBC7] leading-relaxed">
               
-              <div className="whitespace-pre-line leading-relaxed text-sm text-black dark:text-zinc-200">
+              <div className="whitespace-pre-line text-xs text-[#1F2937] dark:text-[#F1F3F5] leading-relaxed">
                 {problem.statement}
               </div>
 
-              <div className="space-y-1.5">
-                <h3 className="font-bold text-[#1a5ab8] dark:text-yellow-400 uppercase tracking-wider text-[11px] font-mono">
-                  Input Format:
-                </h3>
-                <p className="whitespace-pre-line text-black dark:text-zinc-300">{problem.inputFormat}</p>
+              {/* Input Section */}
+              <div>
+                <div className="section-title">Input</div>
+                <div className="whitespace-pre-line text-[#1F2937] dark:text-[#B7BBC7]">{problem.inputFormat}</div>
               </div>
 
-              <div className="space-y-1.5">
-                <h3 className="font-bold text-[#1a5ab8] dark:text-yellow-400 uppercase tracking-wider text-[11px] font-mono">
-                  Output Format:
-                </h3>
-                <p className="whitespace-pre-line text-black dark:text-zinc-300">{problem.outputFormat}</p>
+              {/* Output Section */}
+              <div>
+                <div className="section-title">Output</div>
+                <div className="whitespace-pre-line text-[#1F2937] dark:text-[#B7BBC7]">{problem.outputFormat}</div>
               </div>
 
-              {/* Constraints Box */}
-              <div className="p-3 rounded-lg bg-[#f8fafc] dark:bg-zinc-900 border border-gray-300 dark:border-yellow-500/30 space-y-1">
-                <h3 className="font-bold text-[#1a5ab8] dark:text-yellow-400 uppercase tracking-wider text-[11px] font-mono flex items-center space-x-1">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  <span>Constraints:</span>
-                </h3>
-                <pre className="font-mono text-xs text-black dark:text-yellow-300 whitespace-pre-wrap font-semibold">
+              {/* Constraints Section */}
+              <div>
+                <div className="section-title">Constraints</div>
+                <pre className="bg-[#EFEFEF] dark:bg-[#15161B] p-2.5 rounded border border-[#B9B9B9] dark:border-[#393443] font-mono text-xs font-semibold whitespace-pre-wrap text-[#1F2937] dark:text-[#F1F3F5]">
                   {problem.constraints}
                 </pre>
               </div>
 
-              {/* Examples Section */}
-              <div className="space-y-3 pt-2">
-                <h2 className="font-extrabold text-sm text-black dark:text-yellow-400">Examples:</h2>
+              {/* Codeforces Examples Section (.sample-test) */}
+              <div className="sample-test">
+                <div className="section-title">Examples</div>
 
-                <div className="p-4 rounded-xl bg-[#f8fafc] dark:bg-black border border-gray-300 dark:border-yellow-500/40 space-y-2 font-mono text-xs text-black dark:text-yellow-300 shadow-2xs">
-                  <div className="flex items-center justify-between text-gray-600 dark:text-yellow-400/80 text-[11px]">
-                    <span className="font-bold text-[#1a5ab8] dark:text-yellow-400">Sample Case</span>
+                <div className="input">
+                  <div className="title">
+                    <span>Input</span>
                     <button
                       onClick={copySampleInput}
-                      className="flex items-center space-x-1 text-[#1a5ab8] dark:text-yellow-400 hover:underline font-bold"
+                      className="text-[11px] text-[#3B5998] dark:text-[#4F7CFF] hover:underline font-bold flex items-center space-x-1"
                     >
-                      {sampleCopied ? <Check className="w-3 h-3 text-emerald-600 dark:text-yellow-400" /> : <Copy className="w-3 h-3" />}
+                      {sampleCopied ? <Check className="w-3 h-3 text-[#008000]" /> : <Copy className="w-3 h-3" />}
                       <span>{sampleCopied ? 'Copied' : 'Copy'}</span>
                     </button>
                   </div>
-
-                  <div>
-                    <span className="font-bold text-[#1a5ab8] dark:text-yellow-400">Input: </span>
-                    <span className="whitespace-pre-wrap text-black dark:text-yellow-300 font-semibold">{problem.sampleInput}</span>
-                  </div>
-
-                  <div>
-                    <span className="font-bold text-[#1a5ab8] dark:text-yellow-400">Output: </span>
-                    <span className="whitespace-pre-wrap text-black dark:text-yellow-300 font-semibold">{problem.sampleOutput}</span>
-                  </div>
-
-                  {problem.sampleExplanation && (
-                    <div className="pt-1 text-black dark:text-zinc-400 font-sans text-xs">
-                      <span className="font-bold text-[#1a5ab8] dark:text-yellow-400 font-mono">Explanation: </span>
-                      <span className="italic">{problem.sampleExplanation}</span>
-                    </div>
-                  )}
+                  <pre>{problem.sampleInput}</pre>
                 </div>
 
+                <div className="output">
+                  <div className="title">Output</div>
+                  <pre>{problem.sampleOutput}</pre>
+                </div>
+
+                {problem.sampleExplanation && (
+                  <div>
+                    <div className="section-title">Note</div>
+                    <div className="text-[#454545] dark:text-[#B7BBC7] italic text-xs leading-relaxed">
+                      {problem.sampleExplanation}
+                    </div>
+                  </div>
+                )}
               </div>
 
             </div>
           )}
 
           {activeTab === 'editorial' && (
-            <div className="p-4 rounded-lg bg-[#f8fafc] dark:bg-zinc-900 border border-gray-300 dark:border-yellow-500/30 text-xs text-black dark:text-zinc-300">
-              <h3 className="font-bold text-[#1a5ab8] dark:text-yellow-400 text-sm mb-2">Editorial Hints</h3>
-              <p>Analyze edge cases like negative numbers, integer overflows, or off-by-one loop boundaries.</p>
+            <div className="p-4 rounded cf-roundbox space-y-2 text-xs text-[#1F2937] dark:text-[#F1F3F5]">
+              <div className="caption">Editorial & Counterexample Strategy</div>
+              <div className="content space-y-2">
+                <p>
+                  To break this C++ implementation, carefully analyze boundary conditions, modular arithmetic overflows, or loop condition off-by-one bugs.
+                </p>
+                <div className="p-2.5 bg-[#E1E1E1] dark:bg-[#292535] rounded font-mono text-xs">
+                  Target Language: GNU C++17 (-O2)
+                </div>
+              </div>
             </div>
           )}
 
           {activeTab === 'submissions' && (
-            <div className="p-4 rounded-lg bg-[#f8fafc] dark:bg-zinc-900 border border-gray-300 dark:border-yellow-500/30 text-xs text-black dark:text-zinc-300">
-              <h3 className="font-bold text-[#1a5ab8] dark:text-yellow-400 text-sm mb-2">Your Submissions</h3>
-              <p className="text-black dark:text-zinc-400">
-                {problem.solved ? '✓ Solved on BreakCase Platform' : 'No successful counterexamples yet.'}
-              </p>
+            <div className="cf-roundbox text-xs">
+              <div className="caption">Submission History</div>
+              <div className="content">
+                {problem.solved ? (
+                  <div className="text-[#008000] font-bold">
+                    ✔ ACCEPTED: Counterexample found on BreakCase Platform
+                  </div>
+                ) : (
+                  <div className="text-[#717171]">No successful counterexamples submitted yet.</div>
+                )}
+              </div>
             </div>
           )}
-
-          {activeTab === 'comments' && (
-            <div className="p-4 rounded-lg bg-[#f8fafc] dark:bg-zinc-900 border border-gray-300 dark:border-yellow-500/30 text-xs text-black dark:text-zinc-300">
-              <h3 className="font-bold text-[#1a5ab8] dark:text-yellow-400 text-sm mb-2">Discussion & Comments</h3>
-              <p className="text-black dark:text-zinc-400">No public comments yet.</p>
-            </div>
-          )}
-
         </div>
 
-        {/* RIGHT PANE: IDE & COUNTEREXAMPLE TESTER */}
-        <div className="flex flex-col bg-white dark:bg-zinc-950 overflow-hidden">
+        {/* RIGHT PANE: CODEVIEWER & COUNTEREXAMPLE INPUT */}
+        <div className="flex flex-col bg-white dark:bg-[#1E1F26] overflow-hidden">
           
           {/* Top IDE Toolbar */}
-          <div className="px-4 py-2 bg-[#e8f4fc] dark:bg-zinc-900 border-b border-gray-300 dark:border-yellow-500/30 flex items-center justify-between text-xs shrink-0">
+          <div className="px-4 py-2 bg-[#E1E1E1] dark:bg-[#202129] border-b border-[#B9B9B9] dark:border-[#393443] flex items-center justify-between text-xs shrink-0">
             <div className="flex items-center space-x-3">
               <div className="relative">
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="bg-white dark:bg-black text-sky-900 dark:text-yellow-400 border border-sky-300 dark:border-yellow-500/40 rounded px-2.5 py-1 text-xs font-mono font-semibold focus:outline-none appearance-none pr-7 cursor-pointer"
+                  className="bg-white dark:bg-[#1E1F26] text-[#1F2937] dark:text-[#F1F3F5] border border-[#B9B9B9] dark:border-[#393443] rounded px-3 py-1 text-xs font-mono font-bold focus:outline-none appearance-none pr-8 cursor-pointer"
                 >
-                  <option value="C++ (17)">C++ (17)</option>
-                  <option value="Java">Java</option>
-                  <option value="Python 3">Python 3</option>
+                  <option value="GNU G++17 7.3.0">GNU G++17 7.3.0</option>
+                  <option value="GNU G++20 11.2.0">GNU G++20 11.2.0</option>
+                  <option value="Clang++17">Clang++17 C++17</option>
                 </select>
-                <ChevronDown className="w-3.5 h-3.5 text-sky-600 dark:text-yellow-400 absolute right-2 top-2 pointer-events-none" />
+                <ChevronDown className="w-3.5 h-3.5 text-[#3B5998] dark:text-[#4F7CFF] absolute right-2.5 top-2 pointer-events-none" />
               </div>
 
               <button
                 onClick={() => setTimerRunning(!timerRunning)}
-                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded text-xs font-mono font-semibold transition-colors border ${
+                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded text-xs font-mono font-bold transition-colors border ${
                   timerRunning
-                    ? 'bg-amber-500/20 text-amber-600 dark:text-yellow-400 border-amber-500/40'
-                    : 'bg-white dark:bg-black text-sky-700 dark:text-yellow-400 border-sky-300 dark:border-yellow-500/40 hover:bg-sky-50 dark:hover:bg-zinc-900'
+                    ? 'bg-[#FFF3E0] text-[#FF8C00] border-[#FF8C00]/40'
+                    : 'bg-white dark:bg-[#1E1F26] text-[#3B5998] dark:text-[#4F7CFF] border-[#B9B9B9] dark:border-[#393443] hover:bg-[#E1E1E1] dark:hover:bg-[#292535]'
                 }`}
               >
                 <Clock className="w-3.5 h-3.5" />
@@ -403,10 +389,10 @@ export const ProblemPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex items-center space-x-2 text-sky-700 dark:text-yellow-400">
+            <div className="flex items-center space-x-2 text-[#3B5998] dark:text-[#4F7CFF]">
               <button
                 onClick={() => setSeconds(0)}
-                className="p-1 rounded hover:bg-sky-200 dark:hover:bg-zinc-800 transition-colors"
+                className="p-1 rounded hover:bg-[#CCCCCC] dark:hover:bg-[#292535] transition-colors"
                 title="Reset timer"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -415,7 +401,7 @@ export const ProblemPage: React.FC = () => {
           </div>
 
           {/* Monaco Editor Workspace */}
-          <div className="flex-1 bg-slate-900 dark:bg-black relative min-h-[300px]">
+          <div className="flex-1 bg-[#EFEFEF] dark:bg-[#15161B] relative min-h-[280px]">
             {problem.buggySolution && (
               <Editor
                 height="100%"
@@ -426,132 +412,118 @@ export const ProblemPage: React.FC = () => {
                   readOnly: true,
                   domReadOnly: true,
                   fontSize: 13,
-                  fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
+                  fontFamily: "Consolas, 'Courier New', monospace",
                   minimap: { enabled: false },
                   scrollBeyondLastLine: false,
                   automaticLayout: true,
                   lineNumbers: 'on',
                   folding: true,
-                  padding: { top: 12, bottom: 12 },
+                  padding: { top: 10, bottom: 10 },
                   renderLineHighlight: 'all',
                 }}
               />
             )}
           </div>
 
-          {/* Custom Input Drawer */}
-          {showCustomInput && (
-            <div className="bg-white dark:bg-zinc-950 border-t border-sky-200 dark:border-yellow-500/30 p-3 space-y-2 shrink-0 max-h-48 overflow-y-auto">
-              <div className="flex items-center justify-between text-xs text-sky-900 dark:text-yellow-400 font-mono">
-                <span className="font-bold">Custom Counterexample Input:</span>
-                <span className="text-[10px] text-slate-500 dark:text-zinc-500">Provide input within problem constraints</span>
+          {/* Codeforces Style Counterexample Tester & Verdict Drawer */}
+          <div className="bg-white dark:bg-[#1E1F26] border-t border-[#B9B9B9] dark:border-[#393443] p-3.5 space-y-3 shrink-0">
+            
+            {/* Input Form Header */}
+            <div className="flex items-center justify-between text-xs text-[#3B5998] dark:text-[#4F7CFF] font-sans">
+              <span className="font-bold flex items-center space-x-1.5">
+                <Terminal className="w-4 h-4" />
+                <span>Submit Counterexample Input:</span>
+              </span>
+              <span className="text-[11px] text-[#717171] dark:text-[#858A99] italic">
+                Input will be parsed & validated against server constraints
+              </span>
+            </div>
+
+            {/* Input Textarea */}
+            <textarea
+              rows={3}
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+              placeholder="Paste or type test case input here (e.g. 5\n1 -2 3 -4 5)..."
+              className="w-full p-2.5 bg-[#F8FAFC] dark:bg-[#141519] text-[#1F2937] dark:text-[#F1F3F5] border border-[#B9B9B9] dark:border-[#393443] rounded font-mono text-xs focus:outline-none focus:border-[#3B5998] dark:focus:border-[#4F7CFF]"
+            />
+
+            {/* Submit CTA Button */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={copySampleInput}
+                className="px-2.5 py-1 text-xs border border-[#B9B9B9] dark:border-[#393443] rounded hover:bg-[#E1E1E1] dark:hover:bg-[#292535] text-[#454545] dark:text-[#B7BBC7] transition-colors font-semibold"
+              >
+                Insert Sample Case
+              </button>
+
+              <button
+                onClick={handleTestCounterexample}
+                disabled={evaluating || !inputVal.trim()}
+                className="px-5 py-1.5 bg-[#3B5998] hover:bg-[#2E4577] dark:bg-[#4F7CFF] dark:hover:bg-[#3B67E6] disabled:opacity-50 text-white rounded font-bold text-xs transition-colors flex items-center space-x-2 shadow-xs cursor-pointer"
+              >
+                {evaluating ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Compiling & Testing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>Submit Counterexample</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Execution Result Verdict Banner (Codeforces Style) */}
+            {result && (
+              <div
+                className={`p-3 rounded border text-xs space-y-1.5 shadow-2xs font-sans ${
+                  result.valid && result.broken
+                    ? 'bg-[#DFF0D8] text-[#468847] border-[#D6E9C6] dark:bg-[#1E3A2B] dark:text-[#4CAF50] dark:border-[#2A523C]'
+                    : result.valid && !result.broken
+                    ? 'bg-[#F2DEDE] text-[#B94A48] border-[#EBCCD1] dark:bg-[#3A1E1E] dark:text-[#FF5252] dark:border-[#522A2A]'
+                    : 'bg-[#FCF8E3] text-[#C09853] border-[#FAEBCC] dark:bg-[#3A331E] dark:text-[#FF9800] dark:border-[#52482A]'
+                }`}
+              >
+                <div className="flex items-center justify-between font-bold">
+                  <div className="flex items-center space-x-1.5">
+                    {result.valid && result.broken ? (
+                      <CheckCircle2 className="w-4 h-4 text-[#008000]" />
+                    ) : (
+                      <XCircle className="w-4 h-4" />
+                    )}
+                    <span className="uppercase text-xs font-mono tracking-wide">
+                      {result.valid && result.broken
+                        ? '✔ ACCEPTED — COUNTEREXAMPLE FOUND!'
+                        : result.valid && !result.broken
+                        ? '✖ WRONG ANSWER — SOLUTION PASSED YOUR INPUT'
+                        : '⚠ INVALID CONSTRAINTS — INPUT OUT OF BOUNDS'}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-xs">{result.message}</p>
+
+                {result.expectedOutput && result.actualOutput && (
+                  <div className="pt-2 grid grid-cols-2 gap-2 font-mono text-[11px] border-t border-current/20">
+                    <div>
+                      <div className="font-bold opacity-80 mb-0.5">Expected Output:</div>
+                      <pre className="p-1.5 bg-black/5 dark:bg-black/30 rounded overflow-x-auto whitespace-pre-wrap">
+                        {result.expectedOutput}
+                      </pre>
+                    </div>
+                    <div>
+                      <div className="font-bold opacity-80 mb-0.5 font-sans">Buggy Solution Output:</div>
+                      <pre className="p-1.5 bg-black/5 dark:bg-black/30 rounded overflow-x-auto whitespace-pre-wrap">
+                        {result.actualOutput}
+                      </pre>
+                    </div>
+                  </div>
+                )}
               </div>
-              <textarea
-                rows={3}
-                value={inputVal}
-                onChange={(e) => setInputVal(e.target.value)}
-                placeholder={`Enter custom input test case...\ne.g.\n4\n-10 -5 -2 -9`}
-                className="w-full p-2.5 font-mono text-xs rounded border border-gray-300 dark:border-yellow-500/40 bg-white dark:bg-black text-black dark:text-yellow-300 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:focus:ring-yellow-400 transition-colors resize-y font-semibold"
-              />
-            </div>
-          )}
-
-          {/* Verdict Output Box */}
-          {result && (
-            <div className="bg-white dark:bg-zinc-950 border-t border-gray-300 dark:border-yellow-500/30 p-3 shrink-0 text-xs">
-              {result.valid && result.broken && (
-                <div className="p-3 rounded bg-emerald-50 dark:bg-yellow-950/40 border border-emerald-300 dark:border-yellow-500/50 text-black dark:text-yellow-300 space-y-2">
-                  <div className="flex items-center space-x-2 font-bold text-emerald-800 dark:text-yellow-400 text-sm">
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span>✓ COUNTEREXAMPLE FOUND!</span>
-                  </div>
-                  <p className="text-black dark:text-zinc-300 text-[11px] font-medium">
-                    Solution broke! Expected and actual outputs differ. Problem marked as <strong>Solved</strong>.
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 font-mono text-[11px] pt-1">
-                    <div className="p-2 rounded bg-white dark:bg-black border border-emerald-300 dark:border-yellow-500/40">
-                      <span className="text-emerald-800 dark:text-yellow-400 font-bold block mb-1">Expected Output (Correct):</span>
-                      <pre className="whitespace-pre-wrap text-black dark:text-yellow-300 font-semibold">{result.expectedOutput}</pre>
-                    </div>
-                    <div className="p-2 rounded bg-white dark:bg-black border border-rose-300 dark:border-rose-500/40">
-                      <span className="text-rose-700 dark:text-rose-400 font-bold block mb-1">Solution Output (Buggy):</span>
-                      <pre className="whitespace-pre-wrap text-black dark:text-rose-300 font-semibold">{result.actualOutput}</pre>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {result.valid && !result.broken && (
-                <div className="p-3 rounded bg-amber-50 dark:bg-yellow-950/30 border border-amber-300 dark:border-yellow-500/40 text-black dark:text-yellow-300 space-y-1">
-                  <div className="flex items-center space-x-2 font-bold text-amber-900 dark:text-yellow-400 text-sm">
-                    <XCircle className="w-5 h-5" />
-                    <span>✗ Not a Counterexample</span>
-                  </div>
-                  <p className="text-black dark:text-zinc-300 text-[11px]">
-                    The provided C++ solution gave the correct output for this test case. Try another boundary condition.
-                  </p>
-                </div>
-              )}
-
-              {!result.valid && (
-                <div className="p-3 rounded bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-500/40 text-black dark:text-rose-300 space-y-1">
-                  <div className="flex items-center space-x-2 font-bold text-rose-800 dark:text-rose-400 text-sm">
-                    <AlertTriangle className="w-5 h-5" />
-                    <span>Invalid Test Case</span>
-                  </div>
-                  <p className="text-black dark:text-rose-300 text-[11px] font-mono font-semibold">{result.message}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Bottom Action Bar */}
-          <div className="px-4 py-3 bg-[#e8f4fc] dark:bg-zinc-900 border-t border-gray-300 dark:border-yellow-500/30 flex items-center justify-between text-xs shrink-0">
-            <button
-              onClick={() => setShowCustomInput(!showCustomInput)}
-              className="p-2 rounded bg-white dark:bg-black text-amber-600 dark:text-yellow-400 border border-gray-300 dark:border-yellow-500/40 hover:bg-sky-50 dark:hover:bg-zinc-900 transition-colors"
-              title="Toggle Custom Input drawer"
-            >
-              <Lightbulb className="w-4 h-4 fill-current" />
-            </button>
-
-            <div className="flex items-center space-x-3">
-              <button
-                type="button"
-                onClick={() => setShowCustomInput(!showCustomInput)}
-                className="px-3 py-1.5 rounded font-bold text-black dark:text-yellow-400 hover:bg-sky-100 dark:hover:bg-zinc-800 border border-gray-300 dark:border-yellow-500/40 transition-colors"
-              >
-                Custom Input
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleTestCounterexample()}
-                disabled={evaluating || !inputVal.trim()}
-                className="px-4 py-1.5 rounded font-bold bg-[#1a5ab8] dark:bg-zinc-800 hover:bg-blue-700 dark:hover:bg-zinc-700 text-white dark:text-yellow-400 border border-transparent dark:border-yellow-500/30 transition-colors flex items-center space-x-1.5 disabled:opacity-50"
-              >
-                {evaluating ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                )}
-                <span>Compile & Run</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleTestCounterexample()}
-                disabled={evaluating || !inputVal.trim()}
-                className="px-5 py-1.5 rounded font-bold bg-[#1a5ab8] hover:bg-blue-700 dark:bg-yellow-400 dark:hover:bg-yellow-300 text-white dark:text-zinc-950 shadow-md transition-colors flex items-center space-x-1.5 disabled:opacity-50"
-              >
-                {evaluating ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Zap className="w-3.5 h-3.5 fill-current" />
-                )}
-                <span>Submit</span>
-              </button>
-            </div>
+            )}
 
           </div>
 
@@ -563,6 +535,3 @@ export const ProblemPage: React.FC = () => {
 };
 
 export default ProblemPage;
-
-
-
