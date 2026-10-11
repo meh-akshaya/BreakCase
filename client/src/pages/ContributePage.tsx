@@ -24,7 +24,7 @@ export const ContributePage: React.FC = () => {
               You can submit your problem by creating a Pull Request (PR) on GitHub. I will review and merge your question into the BreakCase platform, and credit your GitHub username/ID directly on the problem card.
             </p>
 
-            <p className="text-xs sm:text-sm font-medium text-[#3B5998] dark:text-[#82A0DF]">
+            <p className="font-medium text-[#82A0DF]">
               Contributing to BreakCase is also a great, hands-on way to learn and practice open-source workflows — from branching and staging to writing clean pull requests and collaborating on real projects.
             </p>
 

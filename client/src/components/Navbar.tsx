@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getCFRatingInfo } from '../utils/codeforces';
-import { LogOut, User as UserIcon, Target } from 'lucide-react';
+import { LogOut, User as UserIcon } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -55,53 +55,36 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between font-sans">
         
         {/* BreakCase Logo Header */}
-        <Link to={user ? "/problems" : "/"} className="flex items-center space-x-3 shrink-0 group">
-          {/* BreakCase Logo Icon */}
-          <div
-            className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-xs transition-all duration-300 ${
-              isHalfway
-                ? 'bg-[#4F7CFF] ring-2 ring-[#4F7CFF]/50 scale-105 shadow-md'
-                : 'bg-[#6C5CE7]'
-            } group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-[0_0_12px_rgba(79,124,255,0.5)]`}
-          >
-            <Target className={`w-5 h-5 stroke-[2.5] transition-transform duration-500 ${isHalfway ? 'rotate-45' : 'group-hover:rotate-90'}`} />
-          </div>
-
-          <div className="flex flex-col leading-tight">
-            <span className="font-extrabold text-2xl tracking-tight transition-colors duration-300 font-sans inline-block">
-              <span
-                className={`transition-colors duration-300 ${
-                  isHalfway
-                    ? 'text-[#4F7CFF]'
-                    : 'text-[#FFFFFF] group-hover:text-[#4F7CFF]'
-                }`}
-              >
-                Break
-              </span>
-              <span
-                className={`transition-colors duration-300 ${
-                  isHalfway
-                    ? 'text-white'
-                    : 'text-[#6C5CE7]'
-                }`}
-              >
-                Case
-              </span>
+        <Link to={user ? "/problems" : "/"} className="flex flex-col leading-tight shrink-0 group -ml-3.5 sm:-ml-5.5">
+          <span className="font-extrabold text-2xl tracking-tight transition-all duration-300 font-sans inline-block group-hover:scale-105 origin-left">
+            <span
+              className={`transition-colors duration-300 ${
+                isHalfway
+                  ? 'text-white'
+                  : 'text-[#4F7CFF]'
+              }`}
+            >
+              Break
             </span>
-            <span className="text-[10px] text-[#858A99] font-sans font-medium tracking-wide">
-              Competitive Programming Counterexample Platform
+            <span
+              className={`transition-colors duration-300 ${
+                isHalfway
+                  ? 'text-[#4F7CFF]'
+                  : 'text-white'
+              }`}
+            >
+              Case
             </span>
-          </div>
+          </span>
+          <span className="text-[10px] text-[#858A99] font-sans font-medium tracking-wide group-hover:text-[#A6ADC0] transition-colors">
+            Get better at debugging
+          </span>
         </Link>
 
         {/* Top Right Utilities */}
-        <div className="flex items-center space-x-3 text-xs shrink-0">
-          <span className="hidden sm:inline text-[11px] text-[#858A99] font-mono border-r border-[#393443] pr-3">
-            <span className="hover:underline cursor-pointer font-bold">EN</span> | <span className="hover:underline cursor-pointer">RU</span>
-          </span>
-
+        <div className="flex items-center space-x-3 text-xs shrink-0 -mr-3.5 sm:-mr-5.5">
           {user ? (
-            <div className="flex items-center space-x-3 border-l border-[#393443] pl-3">
+            <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-1.5 font-bold">
                 <UserIcon className="w-3.5 h-3.5 text-[#3B5998] dark:text-[#4F7CFF]" />
                 <span className={`${ratingInfo.className} font-sans`}>{user.username}</span>
@@ -112,7 +95,7 @@ export const Navbar: React.FC = () => {
 
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-1 text-[#717171] hover:text-[#B94A48] dark:text-[#B7BBC7] dark:hover:text-[#E55353] transition-colors pl-2 border-l border-[#CCCCCC] dark:border-[#393443]"
+                className="flex items-center space-x-1 text-[#717171] hover:text-[#B94A48] dark:text-[#B7BBC7] dark:hover:text-[#E55353] transition-colors pl-2 border-l border-[#393443]"
                 title="Log out"
               >
                 <LogOut className="w-3.5 h-3.5" />
@@ -123,13 +106,13 @@ export const Navbar: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Link
                 to="/login"
-                className="px-2.5 py-1 rounded text-xs font-bold text-[#3B5998] dark:text-[#F1F3F5] hover:bg-[#E1E1E1] dark:hover:bg-[#292535] border border-[#B9B9B9] dark:border-[#393443] transition-colors"
+                className="px-2.5 py-1 rounded text-xs font-bold text-[#F1F3F5] hover:bg-[#292535] border border-[#393443] transition-colors"
               >
                 Enter
               </Link>
               <Link
                 to="/register"
-                className="px-2.5 py-1 rounded text-xs font-bold bg-[#3B5998] hover:bg-[#2E4577] dark:bg-[#4F7CFF] dark:hover:bg-[#3B67E6] text-white transition-colors"
+                className="px-2.5 py-1 rounded text-xs font-bold bg-[#4F7CFF] hover:bg-[#3B67E6] text-white transition-colors"
               >
                 Register
               </Link>
