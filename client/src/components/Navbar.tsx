@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ThemeToggle } from './ThemeToggle';
 import { getCFRatingInfo } from '../utils/codeforces';
 import { LogOut, User as UserIcon, Target } from 'lucide-react';
 
@@ -50,7 +49,7 @@ export const Navbar: React.FC = () => {
   }, [location.pathname]);
 
   return (
-    <header className="bg-white dark:bg-[#181920] border-b border-[#B9B9B9] dark:border-[#393443] transition-colors sticky top-0 z-50 shadow-xs">
+    <header className="bg-[#181920] border-b border-[#393443] transition-colors sticky top-0 z-50 shadow-xs">
       
       {/* Top Bar: Logo & User Utilities */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between font-sans">
@@ -61,9 +60,9 @@ export const Navbar: React.FC = () => {
           <div
             className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-xs transition-all duration-300 ${
               isHalfway
-                ? 'bg-[#3B5998] dark:bg-[#4F7CFF] ring-2 ring-[#3B5998]/40 dark:ring-[#4F7CFF]/50 scale-105 shadow-md'
-                : 'bg-[#3B5998] dark:bg-[#6C5CE7]'
-            } group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-[0_0_12px_rgba(59,89,152,0.5)] dark:group-hover:shadow-[0_0_12px_rgba(79,124,255,0.5)]`}
+                ? 'bg-[#4F7CFF] ring-2 ring-[#4F7CFF]/50 scale-105 shadow-md'
+                : 'bg-[#6C5CE7]'
+            } group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-[0_0_12px_rgba(79,124,255,0.5)]`}
           >
             <Target className={`w-5 h-5 stroke-[2.5] transition-transform duration-500 ${isHalfway ? 'rotate-45' : 'group-hover:rotate-90'}`} />
           </div>
@@ -73,8 +72,8 @@ export const Navbar: React.FC = () => {
               <span
                 className={`transition-colors duration-300 ${
                   isHalfway
-                    ? 'text-[#3B5998] dark:text-[#4F7CFF]'
-                    : 'text-[#3B5998] dark:text-[#FFFFFF] group-hover:text-[#2E4577] dark:group-hover:text-[#4F7CFF]'
+                    ? 'text-[#4F7CFF]'
+                    : 'text-[#FFFFFF] group-hover:text-[#4F7CFF]'
                 }`}
               >
                 Break
@@ -82,14 +81,14 @@ export const Navbar: React.FC = () => {
               <span
                 className={`transition-colors duration-300 ${
                   isHalfway
-                    ? 'text-white drop-shadow-[0_1px_2px_rgba(59,89,152,0.85)] dark:drop-shadow-none'
-                    : 'text-[#E55353] dark:text-[#6C5CE7]'
+                    ? 'text-white'
+                    : 'text-[#6C5CE7]'
                 }`}
               >
                 Case
               </span>
             </span>
-            <span className="text-[10px] text-[#717171] dark:text-[#858A99] font-sans font-medium tracking-wide">
+            <span className="text-[10px] text-[#858A99] font-sans font-medium tracking-wide">
               Competitive Programming Counterexample Platform
             </span>
           </div>
@@ -97,14 +96,12 @@ export const Navbar: React.FC = () => {
 
         {/* Top Right Utilities */}
         <div className="flex items-center space-x-3 text-xs shrink-0">
-          <span className="hidden sm:inline text-[11px] text-[#717171] dark:text-[#858A99] font-mono border-r border-[#CCCCCC] dark:border-[#393443] pr-3">
+          <span className="hidden sm:inline text-[11px] text-[#858A99] font-mono border-r border-[#393443] pr-3">
             <span className="hover:underline cursor-pointer font-bold">EN</span> | <span className="hover:underline cursor-pointer">RU</span>
           </span>
 
-          <ThemeToggle />
-
           {user ? (
-            <div className="flex items-center space-x-3 border-l border-[#B9B9B9] dark:border-[#393443] pl-3">
+            <div className="flex items-center space-x-3 border-l border-[#393443] pl-3">
               <div className="flex items-center space-x-1.5 font-bold">
                 <UserIcon className="w-3.5 h-3.5 text-[#3B5998] dark:text-[#4F7CFF]" />
                 <span className={`${ratingInfo.className} font-sans`}>{user.username}</span>
