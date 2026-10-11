@@ -8,11 +8,12 @@ export const ThemeToggle: React.FC = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors focus:outline-none"
+      className="p-1.5 rounded-md text-[#64748B] hover:text-[#1F2937] dark:text-[#B7BBC7] dark:hover:text-[#F1F3F5] hover:bg-[#EAF0FA] dark:hover:bg-[#292535] transition-colors focus:outline-none"
       title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
       aria-label="Toggle theme"
     >
-      {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-slate-700" />}
+      {theme === 'dark' ? <Sun className="w-4 h-4 text-[#6C5CE7]" /> : <Moon className="w-4 h-4 text-[#3B5FA3]" />}
     </button>
   );
 };
+
