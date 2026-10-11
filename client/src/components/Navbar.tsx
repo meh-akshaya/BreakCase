@@ -26,6 +26,29 @@ export const Navbar: React.FC = () => {
   const userRating = 1200 + solvedCount * 150; // Pupil / Specialist
   const ratingInfo = getCFRatingInfo(userRating);
 
+  const [isHalfway, setIsHalfway] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollHeight <= 0) {
+        setIsHalfway(false);
+        return;
+      }
+      const scrollProgress = window.scrollY / scrollHeight;
+      setIsHalfway(scrollProgress >= 0.5);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [location.pathname]);
+
   return (
     <header className="bg-white dark:bg-[#181920] border-b border-[#B9B9B9] dark:border-[#393443] transition-colors sticky top-0 z-50 shadow-xs">
       
@@ -35,13 +58,36 @@ export const Navbar: React.FC = () => {
         {/* BreakCase Logo Header */}
         <Link to={user ? "/problems" : "/"} className="flex items-center space-x-3 shrink-0 group">
           {/* BreakCase Logo Icon */}
-          <div className="w-8 h-8 rounded-lg bg-[#3B5998] dark:bg-[#6C5CE7] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
-            <Target className="w-5 h-5 stroke-[2.5]" />
+          <div
+            className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-xs transition-all duration-300 ${
+              isHalfway
+                ? 'bg-[#3B5998] dark:bg-[#4F7CFF] ring-2 ring-[#3B5998]/40 dark:ring-[#4F7CFF]/50 scale-105 shadow-md'
+                : 'bg-[#3B5998] dark:bg-[#6C5CE7]'
+            } group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-[0_0_12px_rgba(59,89,152,0.5)] dark:group-hover:shadow-[0_0_12px_rgba(79,124,255,0.5)]`}
+          >
+            <Target className={`w-5 h-5 stroke-[2.5] transition-transform duration-500 ${isHalfway ? 'rotate-45' : 'group-hover:rotate-90'}`} />
           </div>
 
           <div className="flex flex-col leading-tight">
-            <span className="font-extrabold text-2xl tracking-tight text-[#3B5998] dark:text-[#FFFFFF] group-hover:text-[#2E4577] dark:group-hover:text-[#4F7CFF] transition-colors font-sans">
-              Break<span className="text-[#E55353] dark:text-[#6C5CE7]">Case</span>
+            <span className="font-extrabold text-2xl tracking-tight transition-colors duration-300 font-sans inline-block">
+              <span
+                className={`transition-colors duration-300 ${
+                  isHalfway
+                    ? 'text-[#3B5998] dark:text-[#4F7CFF]'
+                    : 'text-[#3B5998] dark:text-[#FFFFFF] group-hover:text-[#2E4577] dark:group-hover:text-[#4F7CFF]'
+                }`}
+              >
+                Break
+              </span>
+              <span
+                className={`transition-colors duration-300 ${
+                  isHalfway
+                    ? 'text-white drop-shadow-[0_1px_2px_rgba(59,89,152,0.85)] dark:drop-shadow-none'
+                    : 'text-[#E55353] dark:text-[#6C5CE7]'
+                }`}
+              >
+                Case
+              </span>
             </span>
             <span className="text-[10px] text-[#717171] dark:text-[#858A99] font-sans font-medium tracking-wide">
               Competitive Programming Counterexample Platform
@@ -132,25 +178,27 @@ export const Navbar: React.FC = () => {
               PROGRESS
             </Link>
 
-            <span className="px-3 py-1.5 text-white/50 cursor-not-allowed hidden md:inline whitespace-nowrap">
-              CONTESTS
-            </span>
+            <Link
+              to="/contribute"
+              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
+                isActive('/contribute')
+                  ? 'bg-white text-[#3B5998] font-bold shadow-xs'
+                  : 'text-white hover:bg-white/15 dark:hover:bg-white/10'
+              }`}
+            >
+              CONTRIBUTE
+            </Link>
 
-            <span className="px-3 py-1.5 text-white/50 cursor-not-allowed hidden md:inline whitespace-nowrap">
-              GYM
-            </span>
-
-            <span className="px-3 py-1.5 text-white/50 cursor-not-allowed hidden md:inline whitespace-nowrap">
-              RATING
-            </span>
-
-            <span className="px-3 py-1.5 text-white/50 cursor-not-allowed hidden md:inline whitespace-nowrap">
-              API
-            </span>
-
-            <span className="px-3 py-1.5 text-white/50 cursor-not-allowed hidden md:inline whitespace-nowrap">
-              HELP
-            </span>
+            <Link
+              to="/about"
+              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
+                isActive('/about')
+                  ? 'bg-white text-[#3B5998] font-bold shadow-xs'
+                  : 'text-white hover:bg-white/15 dark:hover:bg-white/10'
+              }`}
+            >
+              ABOUT
+            </Link>
           </nav>
         </div>
       </div>
