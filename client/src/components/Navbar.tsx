@@ -2,7 +2,8 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
-import { LogOut, User as UserIcon } from 'lucide-react';
+import { getCFRatingInfo } from '../utils/codeforces';
+import { LogOut, User as UserIcon, Target } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -20,75 +21,55 @@ export const Navbar: React.FC = () => {
     return false;
   };
 
+  // Mock solved count for rating display in header
+  const solvedCount = 2; 
+  const userRating = 1200 + solvedCount * 150; // Pupil / Specialist
+  const ratingInfo = getCFRatingInfo(userRating);
+
   return (
-    <header className="bg-white dark:bg-zinc-950 border-b border-gray-300 dark:border-yellow-500/30 transition-colors shadow-2xs sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between font-sans">
+    <header className="bg-white dark:bg-[#181920] border-b border-[#B9B9B9] dark:border-[#393443] transition-colors sticky top-0 z-50 shadow-xs">
+      
+      {/* Top Bar: Logo & User Utilities */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between font-sans">
         
-        {/* Left End: BreakCase Brand Name */}
-        <Link to={user ? "/problems" : "/"} className="flex items-center space-x-2 shrink-0">
-          <span className="font-extrabold text-2xl tracking-tight text-[#1a5ab8] dark:text-yellow-400 font-serif uppercase">
-            BREAKCASE
-          </span>
+        {/* BreakCase Logo Header */}
+        <Link to={user ? "/problems" : "/"} className="flex items-center space-x-3 shrink-0 group">
+          {/* BreakCase Logo Icon */}
+          <div className="w-8 h-8 rounded-lg bg-[#3B5998] dark:bg-[#6C5CE7] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
+            <Target className="w-5 h-5 stroke-[2.5]" />
+          </div>
+
+          <div className="flex flex-col leading-tight">
+            <span className="font-extrabold text-2xl tracking-tight text-[#3B5998] dark:text-[#FFFFFF] group-hover:text-[#2E4577] dark:group-hover:text-[#4F7CFF] transition-colors font-sans">
+              Break<span className="text-[#E55353] dark:text-[#6C5CE7]">Case</span>
+            </span>
+            <span className="text-[10px] text-[#717171] dark:text-[#858A99] font-sans font-medium tracking-wide">
+              Competitive Programming Counterexample Platform
+            </span>
+          </div>
         </Link>
 
-        {/* Middle: Navigation Links (HOME, PROBLEMS, PROGRESS, CONTEST, HELP) */}
-        <nav className="flex items-center space-x-1 sm:space-x-2 text-xs font-bold uppercase tracking-wider overflow-x-auto py-1">
-          <Link
-            to="/"
-            className={`px-3 py-1.5 rounded transition-colors whitespace-nowrap border ${
-              isActive('/') && location.pathname === '/'
-                ? 'bg-[#1a5ab8] dark:bg-yellow-400 text-white dark:text-zinc-950 border-[#1a5ab8] dark:border-yellow-400 font-bold'
-                : 'text-black dark:text-yellow-400 border-transparent hover:bg-sky-50 dark:hover:bg-yellow-400/10'
-            }`}
-          >
-            HOME
-          </Link>
-
-          <Link
-            to="/problems"
-            className={`px-3 py-1.5 rounded transition-colors whitespace-nowrap border ${
-              isActive('/problems')
-                ? 'bg-[#1a5ab8] dark:bg-yellow-400 text-white dark:text-zinc-950 border-[#1a5ab8] dark:border-yellow-400 font-bold'
-                : 'text-black dark:text-yellow-400 border-transparent hover:bg-sky-50 dark:hover:bg-yellow-400/10'
-            }`}
-          >
-            PROBLEMS
-          </Link>
-
-          <Link
-            to="/progress"
-            className={`px-3 py-1.5 rounded transition-colors whitespace-nowrap border ${
-              isActive('/progress')
-                ? 'bg-[#1a5ab8] dark:bg-yellow-400 text-white dark:text-zinc-950 border-[#1a5ab8] dark:border-yellow-400 font-bold'
-                : 'text-black dark:text-yellow-400 border-transparent hover:bg-sky-50 dark:hover:bg-yellow-400/10'
-            }`}
-          >
-            PROGRESS
-          </Link>
-
-          <span className="px-3 py-1.5 text-gray-500 dark:text-zinc-600 cursor-not-allowed hidden md:inline whitespace-nowrap">
-            CONTEST
-          </span>
-
-          <span className="px-3 py-1.5 text-gray-500 dark:text-zinc-600 cursor-not-allowed hidden md:inline whitespace-nowrap">
-            HELP
-          </span>
-        </nav>
-
-        {/* Right End: Login / Register (or User Profile & Logout) */}
+        {/* Top Right Utilities */}
         <div className="flex items-center space-x-3 text-xs shrink-0">
+          <span className="hidden sm:inline text-[11px] text-[#717171] dark:text-[#858A99] font-mono border-r border-[#CCCCCC] dark:border-[#393443] pr-3">
+            <span className="hover:underline cursor-pointer font-bold">EN</span> | <span className="hover:underline cursor-pointer">RU</span>
+          </span>
+
           <ThemeToggle />
 
           {user ? (
-            <div className="flex items-center space-x-3 border-l border-gray-300 dark:border-yellow-500/30 pl-3">
-              <div className="flex items-center space-x-1.5 font-bold text-black dark:text-yellow-400">
-                <UserIcon className="w-3.5 h-3.5 text-[#1a5ab8] dark:text-yellow-400" />
-                <span>{user.username}</span>
+            <div className="flex items-center space-x-3 border-l border-[#B9B9B9] dark:border-[#393443] pl-3">
+              <div className="flex items-center space-x-1.5 font-bold">
+                <UserIcon className="w-3.5 h-3.5 text-[#3B5998] dark:text-[#4F7CFF]" />
+                <span className={`${ratingInfo.className} font-sans`}>{user.username}</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded font-mono border border-current opacity-80" style={{ color: ratingInfo.color }}>
+                  {ratingInfo.title} ({userRating})
+                </span>
               </div>
 
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-1 text-gray-600 hover:text-rose-600 dark:text-zinc-400 dark:hover:text-yellow-400 transition-colors pl-2 border-l border-gray-300 dark:border-yellow-500/30"
+                className="flex items-center space-x-1 text-[#717171] hover:text-[#B94A48] dark:text-[#B7BBC7] dark:hover:text-[#E55353] transition-colors pl-2 border-l border-[#CCCCCC] dark:border-[#393443]"
                 title="Log out"
               >
                 <LogOut className="w-3.5 h-3.5" />
@@ -99,26 +80,82 @@ export const Navbar: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Link
                 to="/login"
-                className="px-3 py-1 rounded text-xs font-semibold text-[#1a5ab8] dark:text-yellow-400 hover:bg-sky-50 dark:hover:bg-yellow-400/10 border border-[#1a5ab8] dark:border-yellow-500/50"
+                className="px-2.5 py-1 rounded text-xs font-bold text-[#3B5998] dark:text-[#F1F3F5] hover:bg-[#E1E1E1] dark:hover:bg-[#292535] border border-[#B9B9B9] dark:border-[#393443] transition-colors"
               >
-                Log In
+                Enter
               </Link>
               <Link
                 to="/register"
-                className="px-3 py-1 rounded text-xs font-bold bg-[#1a5ab8] hover:bg-blue-700 dark:bg-yellow-400 dark:hover:bg-yellow-300 text-white dark:text-zinc-950 shadow-2xs"
+                className="px-2.5 py-1 rounded text-xs font-bold bg-[#3B5998] hover:bg-[#2E4577] dark:bg-[#4F7CFF] dark:hover:bg-[#3B67E6] text-white transition-colors"
               >
                 Register
               </Link>
             </div>
           )}
         </div>
+      </div>
 
+      {/* Main Codeforces Navigation Bar (.main-menu-list) */}
+      <div className="bg-[#3B5998] dark:bg-[#202129] border-t border-b border-[#2E4577] dark:border-[#393443]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <nav className="flex items-center space-x-1 text-xs font-bold uppercase tracking-wide overflow-x-auto py-1">
+            <Link
+              to="/"
+              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
+                isActive('/') && location.pathname === '/'
+                  ? 'bg-white text-[#3B5998] font-bold shadow-xs'
+                  : 'text-white hover:bg-white/15 dark:hover:bg-white/10'
+              }`}
+            >
+              HOME
+            </Link>
+
+            <Link
+              to="/problems"
+              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
+                isActive('/problems')
+                  ? 'bg-white text-[#3B5998] font-bold shadow-xs'
+                  : 'text-white hover:bg-white/15 dark:hover:bg-white/10'
+              }`}
+            >
+              PROBLEMSET
+            </Link>
+
+            <Link
+              to="/progress"
+              className={`px-3 py-1.5 rounded transition-all whitespace-nowrap ${
+                isActive('/progress')
+                  ? 'bg-white text-[#3B5998] font-bold shadow-xs'
+                  : 'text-white hover:bg-white/15 dark:hover:bg-white/10'
+              }`}
+            >
+              PROGRESS
+            </Link>
+
+            <span className="px-3 py-1.5 text-white/50 cursor-not-allowed hidden md:inline whitespace-nowrap">
+              CONTESTS
+            </span>
+
+            <span className="px-3 py-1.5 text-white/50 cursor-not-allowed hidden md:inline whitespace-nowrap">
+              GYM
+            </span>
+
+            <span className="px-3 py-1.5 text-white/50 cursor-not-allowed hidden md:inline whitespace-nowrap">
+              RATING
+            </span>
+
+            <span className="px-3 py-1.5 text-white/50 cursor-not-allowed hidden md:inline whitespace-nowrap">
+              API
+            </span>
+
+            <span className="px-3 py-1.5 text-white/50 cursor-not-allowed hidden md:inline whitespace-nowrap">
+              HELP
+            </span>
+          </nav>
+        </div>
       </div>
     </header>
   );
 };
 
 export default Navbar;
-
-
-
