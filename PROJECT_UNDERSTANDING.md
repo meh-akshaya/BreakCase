@@ -28,7 +28,7 @@ Instead of asking users to write algorithmic solutions from scratch, BreakCase p
   - Open a problem page with a Codeforces/LeetCode-inspired split-panel interface.
   - Inspect the provided C++ solution, problem statement, constraints, and sample cases.
   - Submit custom test case inputs and receive real-time execution feedback (✓ Counterexample Found, ✗ Not a Counterexample, or Invalid Test Case).
-  - Toggle between Light Mode (Codeforces-inspired) and Dark Mode (LeetCode-inspired).
+  - Toggle between Light Mode (Slate/Blue inspired) and Dark Mode (Deep Indigo/Dark Slate inspired).
   - View user progress summary (`2 / 5 Problems Solved`).
 
 ### Status Categorization
@@ -38,12 +38,12 @@ Instead of asking users to write algorithmic solutions from scratch, BreakCase p
 - User Authentication & JWT Session Tokens
 - Database persistence via Prisma ORM & SQLite
 - 5 Handcrafted C++ Problems with Buggy & Reference code seeded
-- Server-side input constraint validation per problem
+- Server-side input constraint validation per problem (`ValidationService`)
 - Server-side C++ compilation (`g++ -O2 -std=c++17`) & execution sandbox (2s CPU timeout, 1MB output cap)
 - Real-time output comparison & solved state tracking
 - Desktop 2-column split-panel layout & Mobile stacked layout
-- Theme switching (Light / Dark mode persisted in `localStorage`)
-- User progress page
+- Theme switching (Light `#3B5FA3` / Dark `#6C5CE7` mode persisted in `localStorage`)
+- User progress summary page
 
 #### ⚠️ PARTIAL
 - Monaco Code Editor integration (used for C++ code viewer; counterexample input box uses a styled monospace textarea).
@@ -105,9 +105,9 @@ Here are the actual technologies used in the repository:
 - **What does it do in the project?**: Serves the frontend at `http://localhost:3000` during dev and proxies API calls `/api` to backend at `http://localhost:5001` (`client/vite.config.ts`).
 
 #### Tailwind CSS v4 (`tailwindcss`, `@tailwindcss/vite`)
-- **What is it?**: A utility-first CSS framework for rapid UI styling.
-- **Why is it used HERE?**: Enables custom dark and light themes (LeetCode dark slate & Codeforces light white/navy) without writing verbose custom CSS classes.
-- **What does it do in the project?**: Styles all layouts, buttons, cards, borders, and dark mode transitions in `client/src/index.css`.
+- **What is it?**: A utility-first CSS framework for rapid UI styling with modern CSS custom property integration.
+- **Why is it used HERE?**: Enables custom dark and light themes (slate/white surface with `#3B5FA3` blue primary in light mode; deep slate `#17181D` surface with `#6C5CE7` deep purple accent in dark mode) with `8px` rounded corners and `Inter` typography.
+- **What does it do in the project?**: Styles all layouts, buttons, cards, borders, data tables, and dark mode transitions in `client/src/index.css`.
 
 #### Monaco Editor (`@monaco-editor/react`)
 - **What is it?**: The browser-based code editor engine that powers VS Code.
@@ -477,6 +477,16 @@ erDiagram
 - **Purpose**: Stores competitive-programming problem statements and C++ source code.
 - **Fields**: `id` (PK, cuid), `problemNumber` (Unique integer 1..5), `title`, `slug` (Unique), `difficulty`, `tags`, `shortDescription`, `statement`, `inputFormat`, `outputFormat`, `constraints`, `sampleInput`, `sampleOutput`, `sampleExplanation`, `buggySolution` (Flawed C++ code shown to user), `referenceSolution` (Secret correct C++ code), `language` (default "cpp"), `createdAt`.
 
+##### 📋 The 5 Handcrafted C++ Problems in BreakCase V1
+
+| # | Problem Title | Slug | Difficulty | Core Algorithmic Bug | Example Counterexample Input | Expected vs Actual Behavior |
+|---|---|---|---|---|---|---|
+| 1 | **The Range Maxima** | `the-range-maxima` | Easy | `max_val` initialized to `0` instead of `INT_MIN` | `3\n-15 -3 -42` | Buggy outputs `0`; Reference outputs `-3` (fails on all-negative inputs). |
+| 2 | **Off-by-One Subarray Sum** | `off-by-one-subarray-sum` | Easy/Medium | Loop `for (int i = l; i < r; i++)` misses element at 1-based index `r` | `4\n10 20 15 40\n1 3` | Buggy outputs `30` ($A_1+A_2$); Reference outputs `45` ($A_1+A_2+A_3$). |
+| 3 | **Almost Palindrome** | `almost-palindrome` | Medium | Greedy two-pointer always increments `left++` on mismatch without checking `right-1` branch | `cuucuu` | Buggy outputs `NO`; Reference outputs `YES` (deleting 5th char 'u' gives "cuucu" which is a palindrome). |
+| 4 | **Task Scheduler** | `task-scheduler` | Medium | Sorts tasks by start time `a.start < b.start` instead of end time `a.end < b.end` | `3\n1 10\n2 3\n4 5` | Buggy outputs `1` (picks long task 1); Reference outputs `2` (picks non-overlapping tasks 2 & 3). |
+| 5 | **Modular Power Calculation** | `modular-power-calculation` | Medium/Hard | C++ `%` operator returns negative result for negative base $A$ (e.g. `-3 % 5 == -3`) | `-3 3 5` | Buggy outputs `-2` (unnormalized); Reference outputs `3` (normalized to $[0, M-1]$). |
+
 #### `submissions` (`Submission`)
 - **Purpose**: Logs every test attempt submitted by users.
 - **Fields**: `id` (PK), `userId` (FK $\to$ `users.id`), `problemId` (FK $\to$ `problems.id`), `input`, `buggyOutput`, `expectedOutput`, `isValidInput`, `isCounterexample`, `statusMessage`, `createdAt`.
@@ -688,13 +698,92 @@ PORT=5001
 
 ---
 
-## 23. INTERVIEW PREPARATION (BASIC FOR NOW)
+## 23. DEEP-DIVE INTERVIEW PREPARATION GUIDE
 
-1. **What is BreakCase?**: A competitive programming training platform where users analyze buggy C++ code and find counterexample inputs that break it.
-2. **What is your tech stack?**: React, TypeScript, Vite, Tailwind CSS v4, Express.js, Prisma ORM, SQLite, and system `g++`.
-3. **How do you isolate C++ execution?**: Using `child_process.execFile` with a 2000ms timeout limit and 1MB buffer size cap.
-4. **How does authentication work?**: Passwords hashed with bcrypt; logged-in users receive JWT tokens passed via `Authorization: Bearer <token>` headers.
-5. **How did you test the application?**: Created an end-to-end automated script (`scratch/test_all_problems.js`) that tests all 5 problems against actual C++ binaries.
+### 🎯 Core Project Questions
+
+#### Q1: "Can you give an elevator pitch for BreakCase?"
+> **Answer**: BreakCase is a full-stack competitive-programming training platform built around counterexample debugging. In standard platforms like LeetCode or Codeforces, users write algorithms from scratch. In BreakCase, users are presented with a problem statement and a suspicious C++17 solution that compiles cleanly and passes sample tests. The user's challenge is to inspect the C++ logic, identify hidden edge cases or off-by-one flaws, and submit a single input counterexample within problem constraints that causes the buggy solution to fail. The platform automatically compiles and executes both the buggy and reference solutions in a sandboxed C++ environment, compares outputs in real-time, and persists solved progress.
+
+---
+
+#### Q2: "Walk me through the end-to-end data flow when a user clicks 'Break It'."
+> **Answer**:
+> 1. **Client Submission**: `client/src/pages/ProblemPage.tsx` captures user input and calls `api.testCounterexample(problemId, input)` in `client/src/services/api.ts`.
+> 2. **HTTP & Auth Middleware**: An HTTP `POST` request carries the JSON payload `{ input }` and `Authorization: Bearer <token>` header to `/api/problems/:id/test`. `server/src/middleware/authMiddleware.ts` (`optionalAuth`) decodes the JWT token if present.
+> 3. **Input Validation**: `ProblemController.testCounterexample` delegates to `ValidationService.validateInput(problemNumber, input)`. It parses tokens, integer ranges, and constraints (e.g., $1 \le N \le 10^5$). If format or bounds are violated, returns HTTP `400 Bad Request` with a clear explanation.
+> 4. **Compilation & Binary Caching**: `ExecutionService.runCounterexampleTest` checks MD5 hashes of both the buggy C++ code and reference C++ code. If binaries do not exist in `scratch/bin/`, it compiles them asynchronously using `g++ -O2 -std=c++17`.
+> 5. **Sandboxed Execution**: Spawns two isolated child processes (`child_process.execFile`) with a 2000ms CPU timeout limit and 1MB stdout cap. Pipes the input string to standard input (`stdin`) of both executables.
+> 6. **Output Evaluation**: Captures trimmed `stdout` from both runs. If `buggyOutput !== expectedOutput`, sets `isCounterexample = true`.
+> 7. **Database Persistence**: Logs a `Submission` record via Prisma ORM. If authenticated and `isCounterexample === true`, calls `prisma.progress.upsert()` to mark `solved: true` for `(userId, problemId)`.
+> 8. **UI State Update**: Returns HTTP 200 JSON `{ valid: true, broken: true, expectedOutput, actualOutput }`. React re-renders with a green "✓ COUNTEREXAMPLE FOUND" success banner.
+
+---
+
+#### Q3: "How does the backend compile and execute C++ code safely? What prevents infinite loops or malicious inputs?"
+> **Answer**:
+> - **Compilation**: Source code is compiled using host `g++ -O2 -std=c++17`. Binaries are cached in `scratch/bin/` using MD5 source hashes to avoid redundant compilation overhead on repeated tests.
+> - **Process Isolation**: We execute pre-compiled C++ binaries using `child_process.execFile` (which bypasses shell invocation, preventing command injection).
+> - **Timeout Cap (Infinite Loops)**: Execution is wrapped with a 2000ms CPU timeout. If a C++ binary enters an infinite loop, Node sends SIGTERM/SIGKILL and returns a `Time Limit Exceeded (2s)` error.
+> - **Buffer Cap (Memory / Output Spikes)**: `maxBuffer` is capped at `1024 * 1024` bytes (1MB). If code attempts to flood stdout, execution terminates with `Output Limit Exceeded (1MB)`.
+> - **User Security**: Users submit **input data strings only**, NOT executable C++ code. The executed C++ code comes strictly from pre-audited problem solutions stored in SQLite.
+
+---
+
+#### Q4: "Why is `ValidationService` necessary if C++ code handles input?"
+> **Answer**: 
+> Without `ValidationService`, a user could enter malformed inputs (e.g. string characters when an integer is expected, negative numbers out of bounds, or $10^9$ numbers when $N=10$). Unvalidated inputs could trigger unexpected C++ crashes (`std::out_of_range`, Segmentation Faults) or produce spurious counterexamples that break the problem rules. `ValidationService` enforces exact competitive-programming input formats and bound constraints before spawning expensive C++ compiler/execution child processes.
+
+---
+
+#### Q5: "How is authentication handled across frontend and backend?"
+> **Answer**:
+> - **Registration & Login**: Passwords are hashed with `bcryptjs` (10 salt rounds). Upon authentication, `authController.ts` signs a JSON Web Token (JWT) containing `{ userId, username }`.
+> - **Token Management**: The React app saves the JWT in `localStorage` (`breakcase_token`). `AuthContext` restores session state on page refresh by requesting `GET /api/auth/me`.
+> - **Request Authorization**: All fetch API calls in `client/src/services/api.ts` append `Authorization: Bearer <token>`. `authMiddleware.ts` verifies the signature using `JWT_SECRET` and attaches `req.user`.
+
+---
+
+#### Q6: "Explain your database design and ORM choice."
+> **Answer**:
+> - **Schema**: 4 tables — `User` (credentials), `Problem` (statements, C++ solutions, constraints), `Submission` (attempt logs), and `Progress` (user solved states).
+> - **Key Constraints**: `User.username` and `User.email` are unique. `Progress` uses a compound unique constraint `@@unique([userId, problemId])`, enabling atomic `prisma.progress.upsert()` calls.
+> - **Prisma ORM**: Provides end-to-end type safety in TypeScript, automated schema migrations, and parameterized query execution protecting against SQL injection.
+> - **SQLite**: Selected for zero-config local development, allowing the entire stack to run instantly from a single file (`dev.db`).
+
+---
+
+#### Q7: "How is the modern dark/light theme system implemented?"
+> **Answer**:
+> - **State & Persistence**: `ThemeContext.tsx` tracks current theme (`'light'` or `'dark'`), syncs with `localStorage`, and applies/removes the `.dark` class on `document.documentElement`.
+> - **CSS Design Tokens**: `client/src/index.css` defines CSS variables for both modes:
+>   - *Light Mode*: Surface `#FFFFFF`, Main background `#F7F8FA`, Slate Blue Primary `#3B5FA3`, Text `#1F2937`.
+>   - *Dark Mode*: Slate/Indigo Surface `#202127`, Main background `#17181D`, Accent `#6C5CE7`, Text `#F1F3F5`.
+>   - *Shared*: `8px` rounded corners (`--border-radius`), `Inter` typography, and custom scrollbars.
+> - **Tailwind v4 Integration**: Tailwind utility classes react automatically to `.dark` ancestor classes.
+
+---
+
+#### Q8: "How do you test and verify that your system works end-to-end?"
+> **Answer**:
+> We created an automated end-to-end test script `scratch/test_all_problems.js`. It programmatically invokes `ValidationService` and `ExecutionService` for all 5 problems:
+> 1. Verifies that sample inputs from problem statements pass (i.e. buggy output == reference output).
+> 2. Verifies that invalid inputs fail validation with clear 400 error messages.
+> 3. Verifies that handcrafted counterexamples successfully break all 5 buggy C++ solutions.
+
+---
+
+#### Q9: "What are the main tradeoffs in your current architecture, and how would you scale this for production?"
+> **Answer**:
+> 1. **C++ Execution**:
+>    - *Current*: Local `child_process.execFile` using host `g++`.
+>    - *Production Scale*: Deploy isolated containerized workers (e.g. Docker / gVisor sandboxes or AWS Lambda) with memory limits (`ulimit`), network isolation (`--net=none`), and cgroups CPU caps.
+> 2. **Authentication Storage**:
+>    - *Current*: JWT in `localStorage`.
+>    - *Production Scale*: Transition to HTTP-only, `SameSite=Strict`, `Secure` cookies to eliminate XSS token theft vectors.
+> 3. **Database Engine**:
+>    - *Current*: SQLite single file (`dev.db`).
+>    - *Production Scale*: Migrate Prisma config to PostgreSQL (e.g., Supabase or AWS RDS) for multi-instance concurrency and connection pooling via PgBouncer.
 
 ---
 
