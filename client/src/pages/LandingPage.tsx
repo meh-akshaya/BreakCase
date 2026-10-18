@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export const LandingPage: React.FC = () => {
+  const { user } = useAuth();
   const [isHalfway, setIsHalfway] = useState(false);
 
   useEffect(() => {
@@ -71,24 +73,36 @@ export const LandingPage: React.FC = () => {
         </div>
 
         {/* Primary CTA */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 -mt-3">
-          <Link
-            to="/register"
-            className="w-full sm:w-auto px-5 py-2 rounded-md text-xs sm:text-sm font-bold bg-[#6C5CE7] hover:bg-[#7D6EFA] text-white shadow-xs flex items-center justify-center space-x-1.5 transition-all"
-          >
-            <span>New here? Register</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+        {user ? (
+          <div className="flex items-center justify-center -mt-3">
+            <Link
+              to="/problems"
+              className="w-full sm:w-auto px-5 py-2 rounded-md text-xs sm:text-sm font-bold bg-[#6C5CE7] hover:bg-[#7D6EFA] text-white shadow-xs flex items-center justify-center space-x-1.5 transition-all"
+            >
+              <span>Go to Problemset</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 -mt-3">
+            <Link
+              to="/register"
+              className="w-full sm:w-auto px-5 py-2 rounded-md text-xs sm:text-sm font-bold bg-[#6C5CE7] hover:bg-[#7D6EFA] text-white shadow-xs flex items-center justify-center space-x-1.5 transition-all"
+            >
+              <span>New here? Register</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
 
-          <span className="text-xs text-[#858A99] font-medium lowercase">or</span>
+            <span className="text-xs text-[#858A99] font-medium lowercase">or</span>
 
-          <Link
-            to="/login"
-            className="w-full sm:w-auto px-5 py-2 rounded-md text-xs sm:text-sm font-medium bg-[#202127] border border-[#393443] text-[#F1F3F5] hover:bg-[#292535] transition-colors"
-          >
-            Log In
-          </Link>
-        </div>
+            <Link
+              to="/login"
+              className="w-full sm:w-auto px-5 py-2 rounded-md text-xs sm:text-sm font-medium bg-[#202127] border border-[#393443] text-[#F1F3F5] hover:bg-[#292535] transition-colors"
+            >
+              Log In
+            </Link>
+          </div>
+        )}
 
       </div>
 
