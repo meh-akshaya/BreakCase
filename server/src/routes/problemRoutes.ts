@@ -6,6 +6,7 @@ const router = Router();
 
 router.get('/', optionalAuth, ProblemController.getAllProblems);
 router.get('/:slug', optionalAuth, ProblemController.getProblemBySlug);
+router.get('/:slug/submissions', optionalAuth, ProblemController.getProblemSubmissions);
 router.post('/:id/test', optionalAuth, ProblemController.testCounterexample);
 
 export default router;
