@@ -13,6 +13,9 @@ import {
   Search,
   BookOpen,
   Zap,
+  SlidersHorizontal,
+  Flame,
+  Bug,
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
@@ -21,7 +24,9 @@ export const DashboardPage: React.FC = () => {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedTag, setSelectedTag] = useState<string>('ALL');
+  const [selectedTier, setSelectedTier] = useState<string>('ALL');
+  const [selectedPattern, setSelectedPattern] = useState<string>('ALL');
+  const [sortBy, setSortBy] = useState<'num_asc' | 'num_desc' | 'rating_asc' | 'rating_desc' | 'title'>('num_asc');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Search parameter handle
@@ -52,26 +57,55 @@ export const DashboardPage: React.FC = () => {
   }, []);
 
   const solvedCount = problems.filter((p) => p.solved).length;
-  const totalCount = problems.length || 5;
-  const userRating = 1200 + solvedCount * 150;
+  const totalCount = problems.length || 20;
+  
+  // Real CF-style rating formula based on solved problem ratings
+  let bonusRating = 0;
+  problems.forEach((p) => {
+    if (p.solved) {
+      bonusRating += Math.round((p.rating || 1000) * 0.06);
+    }
+  });
+  const userRating = 1200 + bonusRating;
   const ratingInfo = getCFRatingInfo(userRating);
 
+  // Extract all unique patterns & tags
+  const allPatterns = Array.from(new Set(problems.map((p) => p.pattern).filter(Boolean) as string[]));
+  const allTags = Array.from(new Set(problems.flatMap((p) => p.tags)));
+
+  // Filter & Sort
   const filteredProblems = problems.filter((p) => {
     const query = searchQuery.toLowerCase();
     const matchesSearch = query
       ? p.title.toLowerCase().includes(query) ||
+        (p.pattern && p.pattern.toLowerCase().includes(query)) ||
         p.tags.some((t) => t.toLowerCase().includes(query))
       : true;
 
-    if (selectedTag === 'ALL') return matchesSearch;
-    if (selectedTag === 'SOLVED') return matchesSearch && p.solved;
-    if (selectedTag === 'UNSOLVED') return matchesSearch && !p.solved;
-    return matchesSearch && p.difficulty.toUpperCase().includes(selectedTag);
-  });
+    if (!matchesSearch) return false;
 
-  const allTags = Array.from(
-    new Set(problems.flatMap((p) => p.tags))
-  );
+    // Pattern Filter
+    if (selectedPattern !== 'ALL' && p.pattern !== selectedPattern) {
+      return false;
+    }
+
+    // Tier Filter
+    const r = p.rating || 1000;
+    if (selectedTier === 'ALL') return true;
+    if (selectedTier === 'SOLVED') return p.solved;
+    if (selectedTier === 'UNSOLVED') return !p.solved;
+    if (selectedTier === 'EASY') return r < 1200;
+    if (selectedTier === 'MEDIUM') return r >= 1200 && r < 1600;
+    if (selectedTier === 'HARD') return r >= 1600;
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === 'num_asc') return a.problemNumber - b.problemNumber;
+    if (sortBy === 'num_desc') return b.problemNumber - a.problemNumber;
+    if (sortBy === 'rating_asc') return (a.rating || 1000) - (b.rating || 1000);
+    if (sortBy === 'rating_desc') return (b.rating || 1000) - (a.rating || 1000);
+    if (sortBy === 'title') return a.title.localeCompare(b.title);
+    return 0;
+  });
 
   return (
     <div className="min-h-[calc(100vh-6rem)] bg-white dark:bg-[#141519] text-[#1F2937] dark:text-[#F1F3F5] py-5 px-4 sm:px-6 font-sans">
@@ -82,7 +116,7 @@ export const DashboardPage: React.FC = () => {
           <div className="flex items-center space-x-2">
             <Send className="w-4 h-4 text-[#3B5998] dark:text-[#4F7CFF] shrink-0" />
             <span>
-              Welcome to <strong>BreakCase Platform</strong>! Your mission is to inspect seemingly correct C++ solutions and find counterexample inputs that break them.{' '}
+              Welcome to <strong>BreakCase Platform</strong>! Your mission is to inspect seemingly correct C++ solutions across ratings <strong>*800 to *2100</strong> and find counterexample inputs that break them.{' '}
               <a
                 href="#announcement"
                 className="underline text-[#3B5998] dark:text-[#4F7CFF] hover:opacity-80 font-bold"
@@ -103,26 +137,25 @@ export const DashboardPage: React.FC = () => {
             {/* Roundbox: Contest Announcement Banner */}
             <div className="cf-roundbox" id="announcement">
               <div className="caption">
-                BreakCase Round 1 (Div. 2)
+                BreakCase Round 1 (Div. 1 + Div. 2)
               </div>
               <div className="content space-y-3">
                 <div className="flex items-center justify-between border-b border-[#B9B9B9] dark:border-[#393443] pb-2">
                   <h1 className="text-base font-bold text-[#3B5998] dark:text-[#4F7CFF]">
-                    Official Counterexample Practice Contest
+                    Official Counterexample Practice Contest (20 Problems)
                   </h1>
-                  <span className="text-xs text-[#717171] dark:text-[#858A99] font-mono">Published 2 days ago</span>
+                  <span className="text-xs text-[#717171] dark:text-[#858A99] font-mono">Ratings *800 — *2100</span>
                 </div>
                 <p className="text-xs text-[#454545] dark:text-[#B7BBC7] leading-relaxed">
-                  We are glad to present <strong>BreakCase Round 1 (Div. 2)</strong>! You are provided with{' '}
-                  <strong>{totalCount} handcrafted C++ competitive programming problems</strong>. Each problem includes a complete C++17 solution that compiles cleanly and passes sample cases, but contains a subtle algorithmic edge-case bug. Find 1 input counterexample to solve each problem!
+                  We are thrilled to present <strong>BreakCase Round 1</strong> featuring{' '}
+                  <strong>{totalCount} handcrafted competitive programming problems</strong> spanning 20 distinct algorithmic bug patterns: integer overflow, boundary conditions, greedy choice fallacies, comparator strict weak ordering, modular division, graph component assumptions, and more!
                 </p>
                 <div className="text-[11px] text-[#717171] dark:text-[#858A99] italic flex items-center justify-between">
                   <span>
-                    Problems created by <span className="text-[#3B5998] dark:text-[#4F7CFF] font-bold">BreakCase Team</span> and{' '}
-                    <span className="text-[#008000] font-bold">Community Testers</span>.
+                    Authored by <span className="text-[#3B5998] dark:text-[#4F7CFF] font-bold">BreakCase Engineering</span>.
                   </span>
                   <span className="font-bold text-[#3B5998] dark:text-[#4F7CFF] not-italic">
-                    Standard Time Limit: 2.0s per test
+                    Standard Time Limit: 2.0s per test case
                   </span>
                 </div>
               </div>
@@ -138,35 +171,85 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               {/* Filter Tabs & Search Header */}
-              <div className="bg-[#F0F0F0] dark:bg-[#282933] border-b border-[#B9B9B9] dark:border-[#393443] p-2.5 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center space-x-1.5 text-xs font-semibold">
-                  <span className="text-[#717171] dark:text-[#858A99] mr-1 uppercase font-mono text-[11px] font-bold">Filter:</span>
-                  {['ALL', 'EASY', 'MEDIUM', 'HARD', 'SOLVED', 'UNSOLVED'].map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => setSelectedTag(tag)}
-                      className={`px-2.5 py-0.5 rounded text-xs transition-colors font-sans ${
-                        selectedTag === tag
-                          ? 'bg-[#3B5998] dark:bg-[#4F7CFF] text-white font-bold'
-                          : 'bg-white dark:bg-[#1E1F26] text-[#1F2937] dark:text-[#F1F3F5] hover:bg-[#E1E1E1] dark:hover:bg-[#352E4A] border border-[#B9B9B9] dark:border-[#393443]'
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  ))}
+              <div className="bg-[#F0F0F0] dark:bg-[#282933] border-b border-[#B9B9B9] dark:border-[#393443] p-2.5 space-y-2.5">
+                
+                {/* Top Row: Tier Tabs & Search */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center space-x-1.5 text-xs font-semibold overflow-x-auto">
+                    <span className="text-[#717171] dark:text-[#858A99] mr-1 uppercase font-mono text-[11px] font-bold">Tier:</span>
+                    {[
+                      { id: 'ALL', label: 'ALL' },
+                      { id: 'EASY', label: 'EASY (*800-*1100)' },
+                      { id: 'MEDIUM', label: 'MEDIUM (*1200-*1500)' },
+                      { id: 'HARD', label: 'HARD (*1600+)' },
+                      { id: 'SOLVED', label: 'SOLVED' },
+                      { id: 'UNSOLVED', label: 'UNSOLVED' }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setSelectedTier(tab.id)}
+                        className={`px-2.5 py-0.5 rounded text-xs transition-colors whitespace-nowrap font-sans ${
+                          selectedTier === tab.id
+                            ? 'bg-[#3B5998] dark:bg-[#4F7CFF] text-white font-bold'
+                            : 'bg-white dark:bg-[#1E1F26] text-[#1F2937] dark:text-[#F1F3F5] hover:bg-[#E1E1E1] dark:hover:bg-[#352E4A] border border-[#B9B9B9] dark:border-[#393443]'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Search Input */}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-[#717171] dark:text-[#858A99]" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search title, pattern, or tag..."
+                      className="pl-8 pr-3 py-0.5 bg-white dark:bg-[#1E1F26] border border-[#B9B9B9] dark:border-[#393443] rounded text-xs focus:outline-none focus:border-[#3B5998] dark:focus:border-[#4F7CFF] w-48 sm:w-64"
+                    />
+                  </div>
                 </div>
 
-                {/* Search Input */}
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-[#717171] dark:text-[#858A99]" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search problem title or tag..."
-                    className="pl-8 pr-3 py-0.5 bg-white dark:bg-[#1E1F26] border border-[#B9B9B9] dark:border-[#393443] rounded text-xs focus:outline-none focus:border-[#3B5998] dark:focus:border-[#4F7CFF] w-48 sm:w-64"
-                  />
+                {/* Bottom Row: Pattern Dropdown & Sort Selector */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#B9B9B9]/50 dark:border-[#393443]/50 text-xs">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[#717171] dark:text-[#858A99] font-mono text-[11px] font-bold flex items-center">
+                      <Bug className="w-3.5 h-3.5 mr-1 text-[#3B5998] dark:text-[#4F7CFF]" />
+                      PATTERN:
+                    </span>
+                    <select
+                      value={selectedPattern}
+                      onChange={(e) => setSelectedPattern(e.target.value)}
+                      className="bg-white dark:bg-[#1E1F26] text-[#1F2937] dark:text-[#F1F3F5] border border-[#B9B9B9] dark:border-[#393443] rounded px-2.5 py-0.5 text-xs font-semibold focus:outline-none max-w-xs"
+                    >
+                      <option value="ALL">All Bug Patterns ({allPatterns.length})</option>
+                      {allPatterns.map((pat) => (
+                        <option key={pat} value={pat}>{pat}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[#717171] dark:text-[#858A99] font-mono text-[11px] font-bold flex items-center">
+                      <SlidersHorizontal className="w-3.5 h-3.5 mr-1 text-[#3B5998] dark:text-[#4F7CFF]" />
+                      SORT BY:
+                    </span>
+                    <select
+                      value={sortBy}
+                      onChange={(e: any) => setSortBy(e.target.value)}
+                      className="bg-white dark:bg-[#1E1F26] text-[#1F2937] dark:text-[#F1F3F5] border border-[#B9B9B9] dark:border-[#393443] rounded px-2.5 py-0.5 text-xs font-semibold focus:outline-none"
+                    >
+                      <option value="num_asc">Problem # (Ascending)</option>
+                      <option value="num_desc">Problem # (Descending)</option>
+                      <option value="rating_asc">Rating (Lowest First)</option>
+                      <option value="rating_desc">Rating (Highest First)</option>
+                      <option value="title">Problem Title (A-Z)</option>
+                    </select>
+                  </div>
                 </div>
+
               </div>
 
               {/* Loading State */}
@@ -200,7 +283,7 @@ export const DashboardPage: React.FC = () => {
                     <thead>
                       <tr>
                         <th className="w-12 text-center">#</th>
-                        <th>Name</th>
+                        <th>Problem & Bug Pattern</th>
                         <th className="w-28 text-center">Rating</th>
                         <th className="w-24 text-center">Status</th>
                         <th className="w-28 text-center">Action</th>
@@ -215,7 +298,7 @@ export const DashboardPage: React.FC = () => {
                         </tr>
                       ) : (
                         filteredProblems.map((prob) => {
-                          const diffInfo = getDifficultyRating(prob.difficulty);
+                          const diffInfo = getDifficultyRating(prob.difficulty, prob.rating);
                           const formattedId = String(prob.problemNumber).padStart(2, '0');
                           return (
                             <tr key={prob.id} className={prob.solved ? 'bg-[#E6F4ED]/40 dark:bg-[#1E3A2B]/20' : ''}>
@@ -224,14 +307,21 @@ export const DashboardPage: React.FC = () => {
                                 {formattedId}
                               </td>
 
-                              {/* Title & Tag Pills */}
+                              {/* Title, Pattern & Tags */}
                               <td>
-                                <Link
-                                  to={`/problems/${prob.slug}`}
-                                  className="font-bold text-[#3B5998] dark:text-[#4F7CFF] hover:underline text-sm block mb-1"
-                                >
-                                  {prob.title}
-                                </Link>
+                                <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                                  <Link
+                                    to={`/problems/${prob.slug}`}
+                                    className="font-bold text-[#3B5998] dark:text-[#4F7CFF] hover:underline text-sm"
+                                  >
+                                    {prob.title}
+                                  </Link>
+                                  {prob.pattern && (
+                                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-[#E1E1E1] dark:bg-[#292535] text-[#3B5998] dark:text-[#4F7CFF] font-semibold border border-[#B9B9B9] dark:border-[#393443]">
+                                      ⚡ {prob.pattern}
+                                    </span>
+                                  )}
+                                </div>
                                 <div className="flex flex-wrap items-center gap-1">
                                   {prob.tags.map((t) => (
                                     <span key={t} className="tag-box cursor-pointer" onClick={() => setSearchQuery(t)}>
@@ -243,7 +333,11 @@ export const DashboardPage: React.FC = () => {
 
                               {/* Codeforces Rating Score */}
                               <td className="text-center font-bold">
-                                <span className={`text-xs px-2 py-0.5 rounded border border-current font-mono`} style={{ color: diffInfo.color }}>
+                                <span
+                                  className="text-xs px-2 py-0.5 rounded border border-current font-mono inline-block cursor-help"
+                                  style={{ color: diffInfo.color }}
+                                  title={`${diffInfo.tier} (${prob.difficulty})`}
+                                >
                                   *{diffInfo.rating}
                                 </span>
                               </td>
@@ -336,17 +430,43 @@ export const DashboardPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Sidebar Roundbox: Rating Tier Breakdown */}
+            <div className="cf-roundbox">
+              <div className="caption flex items-center justify-between">
+                <span>Rating Ladder</span>
+                <Flame className="w-3.5 h-3.5 text-[#FF8C00]" />
+              </div>
+              <div className="content space-y-1.5 text-xs">
+                {[
+                  { tier: 'Newbie', range: '*800 - *1100', color: '#808080', count: problems.filter(p => (p.rating || 1000) < 1200).length, solved: problems.filter(p => (p.rating || 1000) < 1200 && p.solved).length },
+                  { tier: 'Pupil / Specialist', range: '*1200 - *1500', color: '#008000', count: problems.filter(p => (p.rating || 1000) >= 1200 && (p.rating || 1000) < 1600).length, solved: problems.filter(p => (p.rating || 1000) >= 1200 && (p.rating || 1000) < 1600 && p.solved).length },
+                  { tier: 'Expert / Master', range: '*1600 - *2100', color: '#0000FF', count: problems.filter(p => (p.rating || 1000) >= 1600).length, solved: problems.filter(p => (p.rating || 1000) >= 1600 && p.solved).length },
+                ].map((tierItem) => (
+                  <div key={tierItem.tier} className="flex items-center justify-between py-1 border-b border-[#B9B9B9]/30 dark:border-[#393443]/30 last:border-b-0">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: tierItem.color }}></span>
+                      <span className="font-semibold">{tierItem.tier}</span>
+                      <span className="text-[10px] text-[#717171] font-mono">({tierItem.range})</span>
+                    </div>
+                    <span className="font-mono font-bold text-[#008000]">
+                      {tierItem.solved} / {tierItem.count}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Sidebar Roundbox: Pay Attention */}
             <div className="cf-roundbox">
               <div className="caption">
-                Pay Attention
+                Rules of the Hack
               </div>
               <div className="content space-y-2 text-xs text-[#454545] dark:text-[#B7BBC7]">
                 <p>
                   <strong>Rule 1:</strong> Your counterexample input must strictly satisfy all numerical bounds and token formats specified in the problem statement.
                 </p>
                 <p>
-                  <strong>Rule 2:</strong> Non-conforming or out-of-bound test cases will return <span className="text-[#B94A48] font-bold">Invalid Constraint</span>.
+                  <strong>Rule 2:</strong> When you provide a valid counterexample, the buggy C++ code will output an incorrect answer while the reference code produces the expected answer.
                 </p>
               </div>
             </div>
@@ -367,9 +487,6 @@ export const DashboardPage: React.FC = () => {
                       {t}
                     </span>
                   ))}
-                  <span className="tag-box cursor-pointer" onClick={() => setSearchQuery('math')}>math</span>
-                  <span className="tag-box cursor-pointer" onClick={() => setSearchQuery('greedy')}>greedy</span>
-                  <span className="tag-box cursor-pointer" onClick={() => setSearchQuery('implementation')}>implementation</span>
                 </div>
               </div>
             </div>
@@ -382,11 +499,11 @@ export const DashboardPage: React.FC = () => {
               <div className="content space-y-1.5 text-xs text-[#3B5998] dark:text-[#4F7CFF]">
                 <div className="hover:underline cursor-pointer flex items-center space-x-1 font-semibold">
                   <BookOpen className="w-3.5 h-3.5" />
-                  <span>BreakCase Tutorial & Problem Notes</span>
+                  <span>20 Handcrafted Vulnerability Patterns</span>
                 </div>
                 <div className="hover:underline cursor-pointer flex items-center space-x-1 font-semibold">
                   <Zap className="w-3.5 h-3.5" />
-                  <span>C++17 Compiler Flags & Sandbox Spec</span>
+                  <span>GNU C++17 (-O2) Compilation Sandbox</span>
                 </div>
               </div>
             </div>
