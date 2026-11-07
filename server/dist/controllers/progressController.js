@@ -17,6 +17,8 @@ class ProgressController {
                     title: true,
                     slug: true,
                     difficulty: true,
+                    rating: true,
+                    pattern: true,
                 }
             });
             const userProgress = await db_1.prisma.progress.findMany({
@@ -24,23 +26,34 @@ class ProgressController {
             });
             const solvedMap = {};
             let solvedCount = 0;
+            let totalRatingScore = 0;
             userProgress.forEach((p) => {
                 if (p.solved) {
                     solvedMap[p.problemId] = true;
                     solvedCount++;
                 }
             });
-            const problemsProgress = allProblems.map((prob) => ({
-                id: prob.id,
-                problemNumber: prob.problemNumber,
-                title: prob.title,
-                slug: prob.slug,
-                difficulty: prob.difficulty,
-                solved: !!solvedMap[prob.id],
-            }));
+            const problemsProgress = allProblems.map((prob) => {
+                const isSolved = !!solvedMap[prob.id];
+                if (isSolved) {
+                    totalRatingScore += Math.round((prob.rating || 1000) * 0.06);
+                }
+                return {
+                    id: prob.id,
+                    problemNumber: prob.problemNumber,
+                    title: prob.title,
+                    slug: prob.slug,
+                    difficulty: prob.difficulty,
+                    rating: prob.rating || 1000,
+                    pattern: prob.pattern,
+                    solved: isSolved,
+                };
+            });
+            const userRating = 1200 + totalRatingScore;
             res.json({
                 totalProblems: allProblems.length,
                 solvedCount,
+                userRating,
                 progress: problemsProgress,
             });
         }
