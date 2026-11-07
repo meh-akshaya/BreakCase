@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
-import type { Problem, TestResult } from '../types';
+import type { Problem, TestResult, SubmissionItem } from '../types';
 import Editor from '@monaco-editor/react';
 import { getDifficultyRating } from '../utils/codeforces';
 import {
@@ -21,6 +21,10 @@ import {
   ChevronDown,
   Code2,
   Terminal,
+  Lightbulb,
+  CornerDownRight,
+  History,
+  Bug,
 } from 'lucide-react';
 
 export const ProblemPage: React.FC = () => {
@@ -30,8 +34,13 @@ export const ProblemPage: React.FC = () => {
   const [error, setError] = useState('');
 
   // Top Tab state
-  const [activeTab, setActiveTab] = useState<'problem' | 'editorial' | 'submissions' | 'comments'>('problem');
+  const [activeTab, setActiveTab] = useState<'problem' | 'editorial' | 'submissions'>('problem');
   const [bookmarked, setBookmarked] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+
+  // Submissions state
+  const [submissions, setSubmissions] = useState<SubmissionItem[]>([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
 
   // Timer state
   const [timerRunning, setTimerRunning] = useState(false);
@@ -43,6 +52,7 @@ export const ProblemPage: React.FC = () => {
   const [evaluating, setEvaluating] = useState(false);
   const [result, setResult] = useState<TestResult | null>(null);
   const [sampleCopied, setSampleCopied] = useState(false);
+  const [sampleLoaded, setSampleLoaded] = useState(false);
 
   // Fetch problem details
   const fetchProblem = async () => {
@@ -59,9 +69,28 @@ export const ProblemPage: React.FC = () => {
     }
   };
 
+  const fetchSubmissions = async () => {
+    if (!slug) return;
+    try {
+      setLoadingSubmissions(true);
+      const res = await api.getProblemSubmissions(slug);
+      setSubmissions(res.submissions || []);
+    } catch (err) {
+      console.error('Error fetching submissions:', err);
+    } finally {
+      setLoadingSubmissions(false);
+    }
+  };
+
   useEffect(() => {
     fetchProblem();
   }, [slug]);
+
+  useEffect(() => {
+    if (activeTab === 'submissions') {
+      fetchSubmissions();
+    }
+  }, [activeTab]);
 
   // Timer effect
   useEffect(() => {
@@ -95,6 +124,10 @@ export const ProblemPage: React.FC = () => {
       if (res.valid && res.broken) {
         setProblem((prev) => (prev ? { ...prev, solved: true } : prev));
       }
+      // Refresh submissions list if tab is open
+      if (activeTab === 'submissions') {
+        fetchSubmissions();
+      }
     } catch (err: any) {
       setResult({
         valid: false,
@@ -111,6 +144,14 @@ export const ProblemPage: React.FC = () => {
       navigator.clipboard.writeText(problem.sampleInput);
       setSampleCopied(true);
       setTimeout(() => setSampleCopied(false), 2000);
+    }
+  };
+
+  const loadSampleIntoInput = () => {
+    if (problem?.sampleInput) {
+      setInputVal(problem.sampleInput);
+      setSampleLoaded(true);
+      setTimeout(() => setSampleLoaded(false), 2000);
     }
   };
 
@@ -143,7 +184,7 @@ export const ProblemPage: React.FC = () => {
   }
 
   const formattedId = String(problem.problemNumber).padStart(2, '0');
-  const diffInfo = getDifficultyRating(problem.difficulty);
+  const diffInfo = getDifficultyRating(problem.difficulty, problem.rating);
 
   return (
     <div className="h-[calc(100vh-6rem)] bg-white dark:bg-[#141519] text-[#1F2937] dark:text-[#F1F3F5] flex flex-col overflow-hidden font-sans">
@@ -151,7 +192,7 @@ export const ProblemPage: React.FC = () => {
       {/* Sub-Header Navigation & Control Bar */}
       <div className="bg-[#E1E1E1] dark:bg-[#202129] border-b border-[#B9B9B9] dark:border-[#393443] px-4 py-1.5 flex items-center justify-between text-xs shrink-0">
         
-        {/* Navigation Tabs (Problem, Editorial, Submissions, Comments) */}
+        {/* Navigation Tabs (Problem, Editorial, Submissions) */}
         <div className="flex items-center space-x-1">
           <Link
             to="/problems"
@@ -182,7 +223,7 @@ export const ProblemPage: React.FC = () => {
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>Tutorial & Hints</span>
+            <span>Editorial & Vulnerability</span>
           </button>
 
           <button
@@ -193,8 +234,8 @@ export const ProblemPage: React.FC = () => {
                 : 'text-[#1F2937] dark:text-[#B7BBC7] hover:bg-white dark:hover:bg-[#292535]'
             }`}
           >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>My Submissions</span>
+            <History className="w-3.5 h-3.5" />
+            <span>Submissions History</span>
           </button>
         </div>
 
@@ -228,13 +269,18 @@ export const ProblemPage: React.FC = () => {
       {/* Main Split Workspace */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-[#B9B9B9] dark:divide-[#393443] overflow-hidden">
         
-        {/* LEFT PANE: CODEFORCES PROBLEM STATEMENT */}
+        {/* LEFT PANE: PROBLEM STATEMENT / EDITORIAL / SUBMISSIONS */}
         <div className="p-6 overflow-y-auto space-y-5 bg-white dark:bg-[#1E1F26] text-[#1F2937] dark:text-[#F1F3F5] problem-statement">
           
           {/* Centered Codeforces Header & Limits */}
           <div className="header space-y-2">
-            <div className="title text-[#3B5998] dark:text-[#4F7CFF]">
-              {formattedId}. {problem.title}
+            <div className="title text-[#3B5998] dark:text-[#4F7CFF] flex flex-wrap items-center justify-center gap-2">
+              <span>{formattedId}. {problem.title}</span>
+              {problem.pattern && (
+                <span className="px-2 py-0.5 rounded text-xs bg-[#E1E1E1] dark:bg-[#292535] text-[#3B5998] dark:text-[#4F7CFF] font-semibold border border-[#B9B9B9] dark:border-[#393443]">
+                  ⚡ {problem.pattern}
+                </span>
+              )}
             </div>
 
             <div className="text-center text-xs space-y-0.5 text-[#454545] dark:text-[#B7BBC7]">
@@ -257,16 +303,39 @@ export const ProblemPage: React.FC = () => {
               <div className="pt-1">
                 <span className="property-title">rating: </span>
                 <span className="font-bold font-mono px-1.5 py-0.2 rounded border border-current" style={{ color: diffInfo.color }}>
-                  *{diffInfo.rating} ({problem.difficulty})
+                  *{diffInfo.rating} ({diffInfo.tier} - {problem.difficulty})
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Statement Content */}
+          {/* Statement Content Tab */}
           {activeTab === 'problem' && (
             <div className="space-y-4 text-xs text-[#1F2937] dark:text-[#B7BBC7] leading-relaxed">
               
+              {/* Interactive Clue / Hint Box */}
+              {problem.hint && (
+                <div className="p-3 rounded border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/20 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-800 dark:text-amber-400 flex items-center space-x-1.5">
+                      <Lightbulb className="w-4 h-4 shrink-0" />
+                      <span>Hacker's Clue</span>
+                    </span>
+                    <button
+                      onClick={() => setShowHint(!showHint)}
+                      className="text-[11px] underline font-semibold text-amber-900 dark:text-amber-300 hover:opacity-80 cursor-pointer"
+                    >
+                      {showHint ? 'Hide Clue' : '💡 Reveal Clue'}
+                    </button>
+                  </div>
+                  {showHint && (
+                    <p className="mt-2 text-amber-900 dark:text-amber-200 leading-relaxed font-sans">
+                      {problem.hint}
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="whitespace-pre-line text-xs text-[#1F2937] dark:text-[#F1F3F5] leading-relaxed">
                 {problem.statement}
               </div>
@@ -298,13 +367,23 @@ export const ProblemPage: React.FC = () => {
                 <div className="input">
                   <div className="title">
                     <span>Input</span>
-                    <button
-                      onClick={copySampleInput}
-                      className="text-[11px] text-[#3B5998] dark:text-[#4F7CFF] hover:underline font-bold flex items-center space-x-1"
-                    >
-                      {sampleCopied ? <Check className="w-3 h-3 text-[#008000]" /> : <Copy className="w-3 h-3" />}
-                      <span>{sampleCopied ? 'Copied' : 'Copy'}</span>
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={loadSampleIntoInput}
+                        className="text-[11px] text-[#3B5998] dark:text-[#4F7CFF] hover:underline font-bold flex items-center space-x-1"
+                        title="Load into counterexample editor box"
+                      >
+                        <CornerDownRight className="w-3 h-3" />
+                        <span>{sampleLoaded ? 'Loaded!' : 'Load to Editor'}</span>
+                      </button>
+                      <button
+                        onClick={copySampleInput}
+                        className="text-[11px] text-[#3B5998] dark:text-[#4F7CFF] hover:underline font-bold flex items-center space-x-1"
+                      >
+                        {sampleCopied ? <Check className="w-3 h-3 text-[#008000]" /> : <Copy className="w-3 h-3" />}
+                        <span>{sampleCopied ? 'Copied' : 'Copy'}</span>
+                      </button>
+                    </div>
                   </div>
                   <pre>{problem.sampleInput}</pre>
                 </div>
@@ -327,30 +406,102 @@ export const ProblemPage: React.FC = () => {
             </div>
           )}
 
+          {/* Editorial & Vulnerability Tab */}
           {activeTab === 'editorial' && (
-            <div className="p-4 rounded cf-roundbox space-y-2 text-xs text-[#1F2937] dark:text-[#F1F3F5]">
-              <div className="caption">Editorial & Counterexample Strategy</div>
-              <div className="content space-y-2">
-                <p>
-                  To break this C++ implementation, carefully analyze boundary conditions, modular arithmetic overflows, or loop condition off-by-one bugs.
-                </p>
-                <div className="p-2.5 bg-[#E1E1E1] dark:bg-[#292535] rounded font-mono text-xs">
-                  Target Language: GNU C++17 (-O2)
+            <div className="cf-roundbox space-y-3 text-xs">
+              <div className="caption flex items-center justify-between">
+                <span>Vulnerability Analysis & Editorial</span>
+                <span className="font-mono text-[11px] text-[#008000] font-bold">Rating *{problem.rating}</span>
+              </div>
+              <div className="content space-y-3">
+                {problem.pattern && (
+                  <div className="p-2.5 bg-[#E1E1E1] dark:bg-[#292535] rounded font-sans text-xs border border-[#B9B9B9] dark:border-[#393443] flex items-center justify-between">
+                    <span className="font-bold text-[#3B5998] dark:text-[#4F7CFF] flex items-center">
+                      <Bug className="w-4 h-4 mr-1.5" />
+                      Algorithmic Flaw Category:
+                    </span>
+                    <span className="font-mono font-bold">{problem.pattern}</span>
+                  </div>
+                )}
+
+                <div className="space-y-2 text-[#1F2937] dark:text-[#F1F3F5] leading-relaxed">
+                  <h3 className="font-bold text-sm text-[#3B5998] dark:text-[#4F7CFF]">Why the Solution Fails</h3>
+                  <p className="whitespace-pre-line leading-relaxed">
+                    {problem.editorial || 'No official editorial published for this problem yet.'}
+                  </p>
+                </div>
+
+                <div className="p-3 bg-[#DFF0D8]/40 dark:bg-[#1E3A2B]/40 border border-[#D6E9C6] dark:border-[#2A523C] rounded space-y-1">
+                  <div className="font-bold text-[#008000] dark:text-[#4CAF50]">
+                    Optimal Fixing Strategy
+                  </div>
+                  <p className="text-[11px] text-[#454545] dark:text-[#B7BBC7]">
+                    In competitive programming, look out for extreme bounds (negative integers, 64-bit integer overflow, boundary index ranges, or non-canonical greedy denomination choices).
+                  </p>
                 </div>
               </div>
             </div>
           )}
 
+          {/* Submissions History Tab */}
           {activeTab === 'submissions' && (
             <div className="cf-roundbox text-xs">
-              <div className="caption">Submission History</div>
+              <div className="caption flex items-center justify-between">
+                <span>Submissions on this Problem</span>
+                <button
+                  onClick={fetchSubmissions}
+                  className="text-[11px] underline hover:opacity-80 font-bold"
+                >
+                  Refresh
+                </button>
+              </div>
               <div className="content">
-                {problem.solved ? (
-                  <div className="text-[#008000] font-bold">
-                    ✔ ACCEPTED: Counterexample found on BreakCase Platform
+                {loadingSubmissions ? (
+                  <div className="py-8 text-center text-[#717171]">
+                    <RefreshCw className="w-5 h-5 mx-auto animate-spin mb-1 text-[#3B5998] dark:text-[#4F7CFF]" />
+                    <span>Loading submissions...</span>
+                  </div>
+                ) : submissions.length === 0 ? (
+                  <div className="py-8 text-center text-[#717171]">
+                    {problem.solved ? (
+                      <div className="text-[#008000] font-bold">
+                        ✔ Solved! Submit another test case to see it in your history.
+                      </div>
+                    ) : (
+                      'No submission attempts yet. Enter a counterexample on the right to test!'
+                    )}
                   </div>
                 ) : (
-                  <div className="text-[#717171]">No successful counterexamples submitted yet.</div>
+                  <div className="space-y-2">
+                    {submissions.map((sub) => (
+                      <div
+                        key={sub.id}
+                        className={`p-2.5 rounded border text-xs space-y-1 font-mono ${
+                          sub.isCounterexample
+                            ? 'bg-[#E6F4ED]/60 border-[#D6E9C6] dark:bg-[#1E3A2B]/40 dark:border-[#2A523C]'
+                            : !sub.isValidInput
+                            ? 'bg-[#FCF8E3]/60 border-[#FAEBCC] dark:bg-[#3A331E]/40 dark:border-[#52482A]'
+                            : 'bg-[#F2DEDE]/60 border-[#EBCCD1] dark:bg-[#3A1E1E]/40 dark:border-[#522A2A]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between font-bold">
+                          <span className={sub.isCounterexample ? 'text-[#008000]' : !sub.isValidInput ? 'text-[#C09853]' : 'text-[#B94A48]'}>
+                            {sub.isCounterexample
+                              ? '✔ BROKEN (Counterexample)'
+                              : !sub.isValidInput
+                              ? '⚠ INVALID INPUT'
+                              : '✖ NOT BROKEN'}
+                          </span>
+                          <span className="text-[10px] text-[#717171] font-normal">
+                            {new Date(sub.createdAt).toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <div className="text-[11px] opacity-80 truncate">
+                          Input: <span className="font-semibold">{sub.input.replace(/\n/g, ' ↵ ')}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
@@ -444,17 +595,17 @@ export const ProblemPage: React.FC = () => {
               rows={3}
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              placeholder="Paste or type test case input here (e.g. 5\n1 -2 3 -4 5)..."
+              placeholder="Paste or type test case input here within constraints..."
               className="w-full p-2.5 bg-[#F8FAFC] dark:bg-[#141519] text-[#1F2937] dark:text-[#F1F3F5] border border-[#B9B9B9] dark:border-[#393443] rounded font-mono text-xs focus:outline-none focus:border-[#3B5998] dark:focus:border-[#4F7CFF]"
             />
 
             {/* Submit CTA Button */}
             <div className="flex items-center justify-between">
               <button
-                onClick={copySampleInput}
+                onClick={loadSampleIntoInput}
                 className="px-2.5 py-1 text-xs border border-[#B9B9B9] dark:border-[#393443] rounded hover:bg-[#E1E1E1] dark:hover:bg-[#292535] text-[#454545] dark:text-[#B7BBC7] transition-colors font-semibold"
               >
-                Insert Sample Case
+                {sampleLoaded ? '✓ Sample Loaded' : 'Load Sample Case'}
               </button>
 
               <button
