@@ -10,7 +10,9 @@ export interface Problem {
   problemNumber: number;
   title: string;
   slug: string;
-  difficulty: 'Easy' | 'Easy/Medium' | 'Medium' | 'Medium/Hard';
+  difficulty: 'Easy' | 'Easy/Medium' | 'Medium' | 'Medium/Hard' | 'Hard';
+  rating: number;
+  pattern?: string;
   tags: string[];
   shortDescription: string;
   statement?: string;
@@ -21,6 +23,8 @@ export interface Problem {
   sampleOutput?: string;
   sampleExplanation?: string;
   buggySolution?: string;
+  hint?: string;
+  editorial?: string;
   language?: string;
   solved?: boolean;
 }
@@ -33,17 +37,31 @@ export interface TestResult {
   message: string;
 }
 
+export interface SubmissionItem {
+  id: string;
+  input: string;
+  buggyOutput?: string;
+  expectedOutput?: string;
+  isValidInput: boolean;
+  isCounterexample: boolean;
+  statusMessage?: string;
+  createdAt: string;
+}
+
 export interface UserProgressItem {
   id: string;
   problemNumber: number;
   title: string;
   slug: string;
   difficulty: string;
+  rating: number;
+  pattern?: string;
   solved: boolean;
 }
 
 export interface UserProgressResponse {
   totalProblems: number;
   solvedCount: number;
+  userRating?: number;
   progress: UserProgressItem[];
 }
