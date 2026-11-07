@@ -5,7 +5,7 @@ export interface ValidationResult {
 
 export class ValidationService {
   /**
-   * Validate user input against problem constraints based on problem slug or number.
+   * Validate user input against problem constraints based on problem number.
    */
   static validateInput(problemNumber: number, inputStr: string): ValidationResult {
     const trimmed = inputStr.trim();
@@ -25,6 +25,36 @@ export class ValidationService {
           return this.validateProblem4(trimmed);
         case 5:
           return this.validateProblem5(trimmed);
+        case 6:
+          return this.validateProblem6(trimmed);
+        case 7:
+          return this.validateProblem7(trimmed);
+        case 8:
+          return this.validateProblem8(trimmed);
+        case 9:
+          return this.validateProblem9(trimmed);
+        case 10:
+          return this.validateProblem10(trimmed);
+        case 11:
+          return this.validateProblem11(trimmed);
+        case 12:
+          return this.validateProblem12(trimmed);
+        case 13:
+          return this.validateProblem13(trimmed);
+        case 14:
+          return this.validateProblem14(trimmed);
+        case 15:
+          return this.validateProblem15(trimmed);
+        case 16:
+          return this.validateProblem16(trimmed);
+        case 17:
+          return this.validateProblem17(trimmed);
+        case 18:
+          return this.validateProblem18(trimmed);
+        case 19:
+          return this.validateProblem19(trimmed);
+        case 20:
+          return this.validateProblem20(trimmed);
         default:
           return { valid: true };
       }
@@ -34,151 +64,333 @@ export class ValidationService {
   }
 
   // Problem 1: The Range Maxima
-  // Format: N \n A_1 A_2 ... A_N
-  // Constraints: 1 <= N <= 100000, -10^9 <= A_i <= 10^9
   private static validateProblem1(input: string): ValidationResult {
     const tokens = input.trim().split(/\s+/);
-    if (tokens.length < 1) {
-      return { valid: false, message: 'Expected integer N on the first line.' };
-    }
-
+    if (tokens.length < 1) return { valid: false, message: 'Expected integer N.' };
     const n = parseInt(tokens[0], 10);
-    if (isNaN(n) || n < 1 || n > 100000) {
-      return { valid: false, message: 'Constraint violated: 1 <= N <= 100000.' };
-    }
-
-    if (tokens.length - 1 < n) {
-      return { valid: false, message: `Expected ${n} array elements, but received ${tokens.length - 1}.` };
-    }
-
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (tokens.length - 1 < n) return { valid: false, message: `Expected ${n} elements, got ${tokens.length - 1}.` };
     for (let i = 1; i <= n; i++) {
       const val = parseInt(tokens[i], 10);
       if (isNaN(val) || val < -1000000000 || val > 1000000000) {
         return { valid: false, message: `Constraint violated for element A[${i}]: -10^9 <= A_i <= 10^9.` };
       }
     }
-
     return { valid: true };
   }
 
   // Problem 2: Off-by-One Subarray Sum
-  // Format: N \n A_1 ... A_N \n L R
-  // Constraints: 1 <= N <= 100000, -10^4 <= A_i <= 10^4, 1 <= L <= R <= N
   private static validateProblem2(input: string): ValidationResult {
     const tokens = input.trim().split(/\s+/);
-    if (tokens.length < 1) {
-      return { valid: false, message: 'Expected integer N.' };
-    }
-
+    if (tokens.length < 1) return { valid: false, message: 'Expected integer N.' };
     const n = parseInt(tokens[0], 10);
-    if (isNaN(n) || n < 1 || n > 100000) {
-      return { valid: false, message: 'Constraint violated: 1 <= N <= 100000.' };
-    }
-
-    if (tokens.length < n + 3) {
-      return { valid: false, message: `Expected N=${n} array elements plus L and R range parameters.` };
-    }
-
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (tokens.length < n + 3) return { valid: false, message: `Expected N=${n} elements plus L and R.` };
     for (let i = 1; i <= n; i++) {
       const val = parseInt(tokens[i], 10);
       if (isNaN(val) || val < -10000 || val > 10000) {
-        return { valid: false, message: `Constraint violated for array element A[${i}]: -10^4 <= A_i <= 10^4.` };
+        return { valid: false, message: `Constraint: -10^4 <= A_i <= 10^4.` };
       }
     }
-
     const l = parseInt(tokens[n + 1], 10);
     const r = parseInt(tokens[n + 2], 10);
-
-    if (isNaN(l) || isNaN(r)) {
-      return { valid: false, message: 'L and R must be valid integers.' };
+    if (isNaN(l) || isNaN(r) || l < 1 || r > n || l > r) {
+      return { valid: false, message: `Constraint: 1 <= L <= R <= N (${n}).` };
     }
-
-    if (l < 1 || r > n || l > r) {
-      return { valid: false, message: `Constraint violated: Range must satisfy 1 <= L <= R <= N (${n}). Got L=${l}, R=${r}.` };
-    }
-
     return { valid: true };
   }
 
   // Problem 3: Almost Palindrome
-  // Format: S
-  // Constraints: 1 <= |S| <= 100000, lowercase english letters
   private static validateProblem3(input: string): ValidationResult {
     const s = input.trim();
-    if (s.length < 1 || s.length > 100000) {
-      return { valid: false, message: 'Constraint violated: String length must satisfy 1 <= |S| <= 100000.' };
-    }
-
-    if (!/^[a-z]+$/.test(s)) {
-      return { valid: false, message: 'Constraint violated: String must contain only lowercase English letters (a-z).' };
-    }
-
+    if (s.length < 1 || s.length > 100000) return { valid: false, message: 'Constraint: 1 <= |S| <= 100000.' };
+    if (!/^[a-z]+$/.test(s)) return { valid: false, message: 'String must contain only lowercase English letters (a-z).' };
     return { valid: true };
   }
 
   // Problem 4: Task Scheduler
-  // Format: N \n S_1 E_1 \n ... \n S_N E_N
-  // Constraints: 1 <= N <= 100000, 0 <= S_i < E_i <= 10^9
   private static validateProblem4(input: string): ValidationResult {
     const tokens = input.trim().split(/\s+/);
-    if (tokens.length < 1) {
-      return { valid: false, message: 'Expected integer N.' };
-    }
-
+    if (tokens.length < 1) return { valid: false, message: 'Expected integer N.' };
     const n = parseInt(tokens[0], 10);
-    if (isNaN(n) || n < 1 || n > 100000) {
-      return { valid: false, message: 'Constraint violated: 1 <= N <= 100000.' };
-    }
-
-    if (tokens.length - 1 < n * 2) {
-      return { valid: false, message: `Expected ${n} pairs of (start, end) task times.` };
-    }
-
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (tokens.length - 1 < n * 2) return { valid: false, message: `Expected ${n} pairs of (start, end) times.` };
     for (let i = 0; i < n; i++) {
       const s = parseInt(tokens[1 + i * 2], 10);
       const e = parseInt(tokens[1 + i * 2 + 1], 10);
-
-      if (isNaN(s) || isNaN(e)) {
-        return { valid: false, message: `Task ${i + 1} times must be valid integers.` };
-      }
-
-      if (s < 0 || e > 1000000000 || s >= e) {
-        return { valid: false, message: `Constraint violated for task ${i + 1}: 0 <= S_i < E_i <= 10^9. Got S=${s}, E=${e}.` };
+      if (isNaN(s) || isNaN(e) || s < 0 || e > 1000000000 || s >= e) {
+        return { valid: false, message: `Constraint for task ${i + 1}: 0 <= S_i < E_i <= 10^9.` };
       }
     }
-
     return { valid: true };
   }
 
   // Problem 5: Modular Power Calculation
-  // Format: A B M
-  // Constraints: -10^9 <= A <= 10^9, 0 <= B <= 10^9, 1 <= M <= 10^9
   private static validateProblem5(input: string): ValidationResult {
     const tokens = input.trim().split(/\s+/);
-    if (tokens.length < 3) {
-      return { valid: false, message: 'Expected three space-separated integers: A, B, M.' };
-    }
-
+    if (tokens.length < 3) return { valid: false, message: 'Expected 3 integers: A, B, M.' };
     const a = parseInt(tokens[0], 10);
     const b = parseInt(tokens[1], 10);
     const m = parseInt(tokens[2], 10);
+    if (isNaN(a) || isNaN(b) || isNaN(m)) return { valid: false, message: 'A, B, and M must be integers.' };
+    if (a < -1000000000 || a > 1000000000) return { valid: false, message: 'Constraint: -10^9 <= A <= 10^9.' };
+    if (b < 0 || b > 1000000000) return { valid: false, message: 'Constraint: 0 <= B <= 10^9.' };
+    if (m < 1 || m > 1000000000) return { valid: false, message: 'Constraint: 1 <= M <= 10^9.' };
+    return { valid: true };
+  }
 
-    if (isNaN(a) || isNaN(b) || isNaN(m)) {
-      return { valid: false, message: 'A, B, and M must be valid integers.' };
+  // Problem 6: Negative Parity Trap
+  private static validateProblem6(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 1) return { valid: false, message: 'Expected integer N.' };
+    const n = parseInt(tokens[0], 10);
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (tokens.length - 1 < n) return { valid: false, message: `Expected ${n} integers, received ${tokens.length - 1}.` };
+    for (let i = 1; i <= n; i++) {
+      const x = parseInt(tokens[i], 10);
+      if (isNaN(x) || x < -1000000000 || x > 1000000000) {
+        return { valid: false, message: `Constraint: -10^9 <= A_i <= 10^9.` };
+      }
     }
+    return { valid: true };
+  }
 
-    if (a < -1000000000 || a > 1000000000) {
-      return { valid: false, message: 'Constraint violated: -10^9 <= A <= 10^9.' };
+  // Problem 7: 32-Bit Product Overflow
+  private static validateProblem7(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 1) return { valid: false, message: 'Expected integer N.' };
+    const n = parseInt(tokens[0], 10);
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (tokens.length - 1 < n * 2) return { valid: false, message: `Expected ${n} pairs of (Q_i, P_i).` };
+    for (let i = 0; i < n; i++) {
+      const q = parseInt(tokens[1 + i * 2], 10);
+      const p = parseInt(tokens[1 + i * 2 + 1], 10);
+      if (isNaN(q) || isNaN(p) || q < 1 || q > 1000000 || p < 1 || p > 1000000) {
+        return { valid: false, message: `Constraint: 1 <= Q_i, P_i <= 10^6.` };
+      }
     }
+    return { valid: true };
+  }
 
-    if (b < 0 || b > 1000000000) {
-      return { valid: false, message: 'Constraint violated: 0 <= B <= 10^9.' };
+  // Problem 8: Lower Bound Binary Search
+  private static validateProblem8(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 2) return { valid: false, message: 'Expected N and X.' };
+    const n = parseInt(tokens[0], 10);
+    const x = parseInt(tokens[1], 10);
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (isNaN(x) || x < -1000000000 || x > 1000000000) return { valid: false, message: 'Constraint: -10^9 <= X <= 10^9.' };
+    if (tokens.length - 2 < n) return { valid: false, message: `Expected ${n} sorted array elements.` };
+    let prev = -Infinity;
+    for (let i = 2; i < 2 + n; i++) {
+      const val = parseInt(tokens[i], 10);
+      if (isNaN(val) || val < -1000000000 || val > 1000000000) {
+        return { valid: false, message: 'Constraint: -10^9 <= A_i <= 10^9.' };
+      }
+      if (val < prev) {
+        return { valid: false, message: 'Array must be sorted in non-decreasing order.' };
+      }
+      prev = val;
     }
+    return { valid: true };
+  }
 
-    if (m < 1 || m > 1000000000) {
-      return { valid: false, message: 'Constraint violated: 1 <= M <= 10^9.' };
+  // Problem 9: Distinct Elements Counting
+  private static validateProblem9(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 1) return { valid: false, message: 'Expected integer N.' };
+    const n = parseInt(tokens[0], 10);
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (tokens.length - 1 < n) return { valid: false, message: `Expected ${n} array elements.` };
+    for (let i = 1; i <= n; i++) {
+      const val = parseInt(tokens[i], 10);
+      if (isNaN(val) || val < -1000000000 || val > 1000000000) {
+        return { valid: false, message: 'Constraint: -10^9 <= A_i <= 10^9.' };
+      }
     }
+    return { valid: true };
+  }
 
+  // Problem 10: Point Coordinate Sorting
+  private static validateProblem10(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 1) return { valid: false, message: 'Expected integer N.' };
+    const n = parseInt(tokens[0], 10);
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (tokens.length - 1 < n * 2) return { valid: false, message: `Expected ${n} coordinate pairs (X_i, Y_i).` };
+    for (let i = 0; i < n; i++) {
+      const x = parseInt(tokens[1 + i * 2], 10);
+      const y = parseInt(tokens[1 + i * 2 + 1], 10);
+      if (isNaN(x) || isNaN(y) || x < -1000000000 || x > 1000000000 || y < -1000000000 || y > 1000000000) {
+        return { valid: false, message: 'Constraint: -10^9 <= X_i, Y_i <= 10^9.' };
+      }
+    }
+    return { valid: true };
+  }
+
+  // Problem 11: Coin Change Greedy Trap
+  private static validateProblem11(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 2) return { valid: false, message: 'Expected integers N and V.' };
+    const n = parseInt(tokens[0], 10);
+    const v = parseInt(tokens[1], 10);
+    if (isNaN(n) || n < 1 || n > 20) return { valid: false, message: 'Constraint: 1 <= N <= 20.' };
+    if (isNaN(v) || v < 1 || v > 5000) return { valid: false, message: 'Constraint: 1 <= V <= 5000.' };
+    if (tokens.length - 2 < n) return { valid: false, message: `Expected ${n} coin denominations.` };
+    const coins = new Set<number>();
+    for (let i = 2; i < 2 + n; i++) {
+      const c = parseInt(tokens[i], 10);
+      if (isNaN(c) || c < 1 || c > 1000) return { valid: false, message: 'Constraint: 1 <= C_i <= 1000.' };
+      coins.add(c);
+    }
+    if (!coins.has(1)) return { valid: false, message: 'Denominations must include 1 (C_1 = 1) so all values can be made.' };
+    return { valid: true };
+  }
+
+  // Problem 12: Bitwise Precedence Trap
+  private static validateProblem12(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 2) return { valid: false, message: 'Expected integers X and K.' };
+    const x = parseInt(tokens[0], 10);
+    const k = parseInt(tokens[1], 10);
+    if (isNaN(x) || x < 0 || x > 1000000000) return { valid: false, message: 'Constraint: 0 <= X <= 10^9.' };
+    if (isNaN(k) || k < 0 || k > 30) return { valid: false, message: 'Constraint: 0 <= K <= 30.' };
+    return { valid: true };
+  }
+
+  // Problem 13: All-Negative Maximum Subarray
+  private static validateProblem13(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 1) return { valid: false, message: 'Expected integer N.' };
+    const n = parseInt(tokens[0], 10);
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (tokens.length - 1 < n) return { valid: false, message: `Expected ${n} elements.` };
+    for (let i = 1; i <= n; i++) {
+      const val = parseInt(tokens[i], 10);
+      if (isNaN(val) || val < -1000000000 || val > 1000000000) {
+        return { valid: false, message: 'Constraint: -10^9 <= A_i <= 10^9.' };
+      }
+    }
+    return { valid: true };
+  }
+
+  // Problem 14: BFS on Weighted Graph
+  private static validateProblem14(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 2) return { valid: false, message: 'Expected integers N and M.' };
+    const n = parseInt(tokens[0], 10);
+    const m = parseInt(tokens[1], 10);
+    if (isNaN(n) || n < 2 || n > 100000) return { valid: false, message: 'Constraint: 2 <= N <= 100000.' };
+    if (isNaN(m) || m < 1 || m > 200000) return { valid: false, message: 'Constraint: 1 <= M <= 200000.' };
+    if (tokens.length - 2 < m * 3) return { valid: false, message: `Expected ${m} edge triples (u, v, W).` };
+    for (let i = 0; i < m; i++) {
+      const u = parseInt(tokens[2 + i * 3], 10);
+      const v = parseInt(tokens[2 + i * 3 + 1], 10);
+      const w = parseInt(tokens[2 + i * 3 + 2], 10);
+      if (isNaN(u) || isNaN(v) || isNaN(w) || u < 1 || u > n || v < 1 || v > n || w < 1 || w > 1000000) {
+        return { valid: false, message: `Invalid edge: 1 <= u, v <= N (${n}), 1 <= W <= 10^6.` };
+      }
+    }
+    return { valid: true };
+  }
+
+  // Problem 15: Strictly Increasing Subsequence
+  private static validateProblem15(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 1) return { valid: false, message: 'Expected integer N.' };
+    const n = parseInt(tokens[0], 10);
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (tokens.length - 1 < n) return { valid: false, message: `Expected ${n} elements.` };
+    for (let i = 1; i <= n; i++) {
+      const val = parseInt(tokens[i], 10);
+      if (isNaN(val) || val < -1000000000 || val > 1000000000) {
+        return { valid: false, message: 'Constraint: -10^9 <= A_i <= 10^9.' };
+      }
+    }
+    return { valid: true };
+  }
+
+  // Problem 16: Touching Interval Disjoint Count
+  private static validateProblem16(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 1) return { valid: false, message: 'Expected integer N.' };
+    const n = parseInt(tokens[0], 10);
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (tokens.length - 1 < n * 2) return { valid: false, message: `Expected ${n} interval pairs [L_i, R_i].` };
+    for (let i = 0; i < n; i++) {
+      const l = parseInt(tokens[1 + i * 2], 10);
+      const r = parseInt(tokens[1 + i * 2 + 1], 10);
+      if (isNaN(l) || isNaN(r) || l < 0 || r > 1000000000 || l > r) {
+        return { valid: false, message: `Constraint for interval ${i + 1}: 0 <= L_i <= R_i <= 10^9.` };
+      }
+    }
+    return { valid: true };
+  }
+
+  // Problem 17: Modular Division Trap
+  private static validateProblem17(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 2) return { valid: false, message: 'Expected integers A and B.' };
+    const a = parseInt(tokens[0], 10);
+    const b = parseInt(tokens[1], 10);
+    if (isNaN(a) || isNaN(b) || a < 1 || a > 1000000000 || b < 1 || b > 1000000000) {
+      return { valid: false, message: 'Constraint: 1 <= A, B <= 10^9.' };
+    }
+    if (b % 1000000007 === 0) {
+      return { valid: false, message: 'B must not be a multiple of 10^9+7.' };
+    }
+    return { valid: true };
+  }
+
+  // Problem 18: Fibonacci Zero Base Case
+  private static validateProblem18(input: string): ValidationResult {
+    const trimmed = input.trim();
+    if (!/^\d+$/.test(trimmed)) return { valid: false, message: 'Expected non-negative integer N.' };
+    try {
+      const n = BigInt(trimmed);
+      if (n < 0n || n > 1000000000000000000n) {
+        return { valid: false, message: 'Constraint: 0 <= N <= 10^18.' };
+      }
+    } catch {
+      return { valid: false, message: 'Invalid integer format for N.' };
+    }
+    return { valid: true };
+  }
+
+  // Problem 19: Shortest Subarray with Negative Sum
+  private static validateProblem19(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 2) return { valid: false, message: 'Expected integers N and S.' };
+    const n = parseInt(tokens[0], 10);
+    const s = parseInt(tokens[1], 10);
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (isNaN(s) || s < -1000000000 || s > 1000000000) return { valid: false, message: 'Constraint: -10^9 <= S <= 10^9.' };
+    if (tokens.length - 2 < n) return { valid: false, message: `Expected ${n} elements.` };
+    for (let i = 2; i < 2 + n; i++) {
+      const val = parseInt(tokens[i], 10);
+      if (isNaN(val) || val < -1000000000 || val > 1000000000) {
+        return { valid: false, message: 'Constraint: -10^9 <= A_i <= 10^9.' };
+      }
+    }
+    return { valid: true };
+  }
+
+  // Problem 20: Disconnected Graph Diameter
+  private static validateProblem20(input: string): ValidationResult {
+    const tokens = input.trim().split(/\s+/);
+    if (tokens.length < 2) return { valid: false, message: 'Expected integers N and M.' };
+    const n = parseInt(tokens[0], 10);
+    const m = parseInt(tokens[1], 10);
+    if (isNaN(n) || n < 1 || n > 100000) return { valid: false, message: 'Constraint: 1 <= N <= 100000.' };
+    if (isNaN(m) || m < 0 || m > 200000) return { valid: false, message: 'Constraint: 0 <= M <= 200000.' };
+    if (tokens.length - 2 < m * 2) return { valid: false, message: `Expected ${m} edge pairs (u, v).` };
+    for (let i = 0; i < m; i++) {
+      const u = parseInt(tokens[2 + i * 2], 10);
+      const v = parseInt(tokens[2 + i * 2 + 1], 10);
+      if (isNaN(u) || isNaN(v) || u < 1 || u > n || v < 1 || v > n) {
+        return { valid: false, message: `Invalid edge: 1 <= u, v <= N (${n}).` };
+      }
+    }
     return { valid: true };
   }
 }
