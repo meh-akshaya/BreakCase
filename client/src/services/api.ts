@@ -1,4 +1,4 @@
-import type { Problem, TestResult, User, UserProgressResponse } from '../types';
+import type { Problem, TestResult, User, UserProgressResponse, SubmissionItem } from '../types';
 
 const API_BASE = '/api';
 
@@ -79,6 +79,15 @@ export const api = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to fetch progress');
+    return data;
+  },
+
+  async getProblemSubmissions(slug: string): Promise<{ submissions: SubmissionItem[] }> {
+    const res = await fetch(`${API_BASE}/problems/${slug}/submissions`, {
+      headers: getHeaders(),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to fetch submissions');
     return data;
   }
 };
