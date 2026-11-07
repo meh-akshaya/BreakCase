@@ -23,19 +23,28 @@ export function getCFRatingInfo(rating: number): CFRatingInfo {
   }
 }
 
-export function getDifficultyRating(diff: string): { rating: number; color: string } {
-  switch (diff) {
-    case 'Easy':
-      return { rating: 800, color: '#808080' };
-    case 'Easy/Medium':
-      return { rating: 1200, color: '#008000' };
-    case 'Medium':
-      return { rating: 1400, color: '#03A89E' };
-    case 'Medium/Hard':
-      return { rating: 1700, color: '#0000FF' };
-    case 'Hard':
-      return { rating: 2100, color: '#FF8C00' };
-    default:
-      return { rating: 1000, color: '#808080' };
+export function getDifficultyRating(diff: string, ratingValue?: number): { rating: number; color: string; tier: string } {
+  const rating = ratingValue || (
+    diff === 'Easy' ? 800 :
+    diff === 'Easy/Medium' ? 1100 :
+    diff === 'Medium' ? 1400 :
+    diff === 'Medium/Hard' ? 1600 :
+    diff === 'Hard' ? 1900 : 1000
+  );
+
+  if (rating < 1200) {
+    return { rating, color: '#808080', tier: 'Newbie' };
+  } else if (rating < 1400) {
+    return { rating, color: '#008000', tier: 'Pupil' };
+  } else if (rating < 1600) {
+    return { rating, color: '#03A89E', tier: 'Specialist' };
+  } else if (rating < 1900) {
+    return { rating, color: '#0000FF', tier: 'Expert' };
+  } else if (rating < 2100) {
+    return { rating, color: '#AA00AA', tier: 'Candidate Master' };
+  } else if (rating < 2400) {
+    return { rating, color: '#FF8C00', tier: 'Master' };
+  } else {
+    return { rating, color: '#FF0000', tier: 'Grandmaster' };
   }
 }
