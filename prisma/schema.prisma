@@ -39,6 +39,10 @@ model Problem {
   buggySolution     String       // Suspicious C++ code shown to user
   referenceSolution String       // Secret trusted C++ reference code
   language          String       @default("cpp")
+  rating            Int          @default(1000)
+  pattern           String?      // Category of bug e.g. "Integer Overflow", "Boundary Condition"
+  hint              String?      // Guided clue for the user
+  editorial         String?      // Comprehensive vulnerability breakdown
   createdAt         DateTime     @default(now())
 
   submissions       Submission[]
