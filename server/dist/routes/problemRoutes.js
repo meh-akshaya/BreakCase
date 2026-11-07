@@ -6,5 +6,6 @@ const authMiddleware_1 = require("../middleware/authMiddleware");
 const router = (0, express_1.Router)();
 router.get('/', authMiddleware_1.optionalAuth, problemController_1.ProblemController.getAllProblems);
 router.get('/:slug', authMiddleware_1.optionalAuth, problemController_1.ProblemController.getProblemBySlug);
+router.get('/:slug/submissions', authMiddleware_1.optionalAuth, problemController_1.ProblemController.getProblemSubmissions);
 router.post('/:id/test', authMiddleware_1.optionalAuth, problemController_1.ProblemController.testCounterexample);
 exports.default = router;
