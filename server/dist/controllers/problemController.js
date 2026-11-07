@@ -19,6 +19,8 @@ class ProblemController {
                     title: true,
                     slug: true,
                     difficulty: true,
+                    rating: true,
+                    pattern: true,
                     tags: true,
                     shortDescription: true,
                     language: true,
@@ -190,6 +192,50 @@ class ProblemController {
         catch (err) {
             console.error('Error executing counterexample test:', err);
             res.status(500).json({ error: `Execution error: ${err.message || 'Server error'}` });
+        }
+    }
+    /**
+     * GET /api/problems/:slug/submissions
+     * Fetch submission attempts for this problem
+     */
+    static async getProblemSubmissions(req, res) {
+        try {
+            const slug = req.params.slug;
+            const problem = await db_1.prisma.problem.findUnique({
+                where: { slug },
+                select: { id: true }
+            });
+            if (!problem) {
+                res.status(404).json({ error: 'Problem not found.' });
+                return;
+            }
+            if (!req.user) {
+                res.json({ submissions: [] });
+                return;
+            }
+            const submissions = await db_1.prisma.submission.findMany({
+                where: {
+                    problemId: problem.id,
+                    userId: req.user.id,
+                },
+                orderBy: { createdAt: 'desc' },
+                take: 30,
+                select: {
+                    id: true,
+                    input: true,
+                    buggyOutput: true,
+                    expectedOutput: true,
+                    isValidInput: true,
+                    isCounterexample: true,
+                    statusMessage: true,
+                    createdAt: true,
+                }
+            });
+            res.json({ submissions });
+        }
+        catch (err) {
+            console.error('Error fetching submissions:', err);
+            res.status(500).json({ error: 'Failed to retrieve submissions.' });
         }
     }
 }
